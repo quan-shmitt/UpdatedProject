@@ -15,7 +15,7 @@ namespace UpdatedProject
         private const int Xweight = 784;
         private const int Yweight = 16;
 
-        private int layer;
+
 
 
         public Matrix<double> weights = Matrix<double>.Build.DenseOfArray(new double[Yweight, Xweight]);
@@ -29,11 +29,9 @@ namespace UpdatedProject
         public NetInIt(int Pass, int layer)
         {
 
-            this.layer = layer;
+            FileGen(Pass, layer);
 
-            FileGen(layer, Pass);
-
-            LayerGen(layer, Pass);
+            LayerGen(Pass, layer);
 
         }
 
@@ -47,52 +45,43 @@ namespace UpdatedProject
         //heheheha
 
 
-        public void FileGen(int Layer, int Pass)
+        public void FileGen(int Pass, int Layer)
         {
-            string filename = "Pass ";
 
+
+            for(int i  = 0; i <= Pass; i++)
+            {
+                for(int j = 0; j <= Layer; j++)
+                {
+                    string filename = $"Pass {j}\\Layer {i}";
+
+                    try
+                    {
+                        Directory.CreateDirectory(filename);
+                    }
+                    catch(Exception e)
+                    {
+                        Console.WriteLine($"Error occured: {e}");
+                    }
+                }
+            }
+        }
+        void LayerGen(int Pass ,int layer)
+        {
             for (int i = 0; i <= Pass; i++)
             {
-                try
+                
+                if (i == 0)
                 {
-                    Directory.CreateDirectory(filename + i);
+                    WeightGen(i, layer);
+                    LayerVectorGen(i, layer);
+                    BiasGen(i, layer);
                 }
-                catch (Exception e)
+                else
                 {
-                    Console.WriteLine($"Error: {e.Message}");
+                    WeightGen(i, layer);
+                    BiasGen(i, layer);
                 }
-            }
-
-            filename = "Layer ";
-
-            for (int i = 0; i <= Layer; i++)
-            {
-                try
-                {
-                    Directory.CreateDirectory(filename + i);
-                    Console.WriteLine("file made");
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Error: {e.Message}");
-                }
-            }
-
-
-
-        }
-        void LayerGen(int layer ,int Pass)
-        {
-            if (Pass == 0)
-            {
-                WeightGen(layer ,Pass);
-                LayerVectorGen(Pass);
-                BiasGen(Pass);
-            }
-            else
-            {
-                WeightGen(layer ,Pass);
-                BiasGen(Pass);
             }
         }
 
@@ -105,7 +94,7 @@ namespace UpdatedProject
 
             double mean = 0.0;
             double stdDev = 1.0;
-            string Filename = $"Pass {Pass}\\layer {layer} \\Weights.txt";
+            string Filename = $"Pass {Pass}\\layer {layer}\\Weights.txt";
             int k = 0;
 
 
@@ -155,7 +144,7 @@ namespace UpdatedProject
                 {
                     for (int j = 0; j < Xweight - 1; j++)
                     {
-                        weights[j, i] = Convert.ToDouble(vals[k]);
+                        weights[i, j] = Convert.ToDouble(vals[k]);
                         k++;
                     }
                 }
@@ -165,9 +154,9 @@ namespace UpdatedProject
         }
 
 
-        public void BiasGen(int Pass)
+        public void BiasGen(int Pass, int layer)
         {
-            string filename = "layer " + Pass + "\\Bias.txt";
+            string filename = $"Pass {Pass}\\layer {layer}\\Bias.txt";
             int k = 0;
 
             if (File.Exists(filename))
@@ -217,11 +206,11 @@ namespace UpdatedProject
         }
 
 
-        void LayerVectorGen(int layer)
+        void LayerVectorGen(int Pass, int layer)
         {
             GaussianRandomGenerator generator = new GaussianRandomGenerator();
 
-            string Filename = "layer " + layer + "\\LayerVectors.txt";
+            string Filename = $"Pass {Pass}\\layer {layer}\\LayerVectors.txt";
             int k = 0;
 
 

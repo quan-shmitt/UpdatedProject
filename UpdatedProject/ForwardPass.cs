@@ -33,7 +33,7 @@ namespace UpdatedProject
             Layer++; //indexes to the next layer in the network
 
             weights = getdata.GetWeight(Pass ,Layer);
-            Bias = getdata.getBias(Layer);
+            Bias = getdata.getBias(Pass, Layer);
 
 
 

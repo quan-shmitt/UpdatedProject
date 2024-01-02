@@ -15,9 +15,9 @@ namespace UpdatedProject
         NetInIt netinit = new NetInIt();
 
 
-        public Matrix<double> GetWeight(int Pass ,int Layer)
+        public Matrix<double> GetWeight(int Pass, int layer)
         {
-            string Filename = "layer " + Layer + "\\Weights.txt";
+            string Filename = "layer " + layer + "\\Weights.txt";
             int k = 0;
             Matrix<double> weights = Matrix<double>.Build.DenseOfArray(new double[Yweight, Xweight]);
 
@@ -43,16 +43,16 @@ namespace UpdatedProject
             {
                 Console.WriteLine("Weights dont exist \n remaking file...");
                 
-                netinit.WeightGen(Pass, Layer);
-                GetWeight(Pass ,Layer);
+                netinit.WeightGen(layer, Pass);
+                GetWeight(layer, Pass);
                 return weights;
 
             }
         }
 
-        public Vector<double> getBias(int Layer)
+        public Vector<double> getBias(int Pass, int layer)
         {
-            string filename = "layer " + Layer + "\\Bias.txt";
+            string filename = $"layer {layer}\\LayerVector.txt";
             int k = 0;
             Vector<double> BiasVector = Vector<double>.Build.DenseOfArray(new Double[Yweight]);
 
@@ -73,8 +73,8 @@ namespace UpdatedProject
             else
             {
                 Console.WriteLine("Bias does not exist \n remaking file...");
-                netinit.BiasGen(Layer);
-                getBias(Layer);
+                netinit.BiasGen(Pass, layer);
+                getBias(Pass, layer);
                 return BiasVector;
             }
         }

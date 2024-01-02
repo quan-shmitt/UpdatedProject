@@ -20,7 +20,7 @@ namespace UpdatedProject
 
             Console.WriteLine("enter max image count");
             //int imageMaxIndex = Convert.ToInt32(Console.ReadLine());
-            int layer = 2;
+            int layer = 0;
 
             pass(layer);
             
@@ -32,14 +32,12 @@ namespace UpdatedProject
         {
             int imageMaxIndex = 2;
 
-            for (int i = 0; i <= imageMaxIndex; i++)
-            {
-                NetInIt networkGen = new NetInIt(i, layer);
+            NetInIt networkGen = new NetInIt(imageMaxIndex, layer);
 
 
-                ForwardPass forwardPass = new ForwardPass();
-                forwardPass.Forwards(networkGen.weights,networkGen.LayerVector, networkGen.BiasVector,layer, imageMaxIndex, i);
-            }
+            ForwardPass forwardPass = new ForwardPass();
+            forwardPass.Forwards(networkGen.weights,networkGen.LayerVector, networkGen.BiasVector,0 , 0, imageMaxIndex);
+
         }
 
 
