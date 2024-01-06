@@ -1,33 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MathNet.Numerics.LinearAlgebra ;
 
 namespace UpdatedProject
 {
     internal class NetInIt
     {
+        static GetData getData = new GetData();
+
         public static ImageHandle imageHandle = new ImageHandle();
 
-        private const int Xweight = 784;
-        private const int Yweight = 16;
+        public Matrix<double> weights;
+
+        public Vector<double> LayerVector;
 
 
+        public Vector<double> BiasVector;
 
-
-        public Matrix<double> weights = Matrix<double>.Build.DenseOfArray(new double[Yweight, Xweight]);
-
-        public Vector<double> LayerVector = Vector<double>.Build.DenseOfArray(new Double[Xweight]);
-
-        public Vector<double> BiasVector = Vector<double>.Build.DenseOfArray(new Double[Yweight]);
-
-        
 
         public NetInIt(int Pass, int layer)
         {
+            
+
+            if(getData.GetDimentions(layer) == 0)
+            {
+;
+            }
+            else
+            {
+                SetLayerVectorDimentions(layer);
+            }
+
+            LayerVector = Vector<double>.Build.DenseOfArray(new Double[LayerVector.Count]);
+           
 
             FileGen(Pass, layer);
 
@@ -35,7 +40,6 @@ namespace UpdatedProject
 
         }
 
-        
 
 
         public NetInIt()
@@ -43,6 +47,33 @@ namespace UpdatedProject
 
         }
         //heheheha
+
+
+        static public int GetFileDimentions(int layer)
+        {
+            string filename = $"image_{layer}_";
+            string DimFile = "Dimentions.txt";
+
+
+            Vector<double> vals = imageHandle.NormRGB(filename, layer);
+
+            Console.WriteLine(vals.Count);
+
+            string existingText;
+            using (StreamReader reader = new StreamReader(DimFile))
+            {
+                existingText = reader.ReadToEnd();
+            }
+
+            // Write the new text and then the existing content back to the file
+            using (StreamWriter writer = new StreamWriter(DimFile))
+            {
+                writer.Write($"layer0Dimention = {vals.Count}");
+                writer.Write(existingText);
+            }
+
+            return vals.Count;
+        }
 
 
         public void FileGen(int Pass, int Layer)
@@ -53,7 +84,7 @@ namespace UpdatedProject
             {
                 for(int j = 0; j <= Layer; j++)
                 {
-                    string filename = $"Pass {j}\\Layer {i}";
+                    string filename = $"Pass {i}\\Layer {j}";
 
                     try
                     {
@@ -68,19 +99,21 @@ namespace UpdatedProject
         }
         void LayerGen(int Pass ,int layer)
         {
-            for (int i = 0; i <= Pass; i++)
+            for (int i = 0;i <= Pass; i++)
             {
-                
-                if (i == 0)
+                for(int j = 0; j <= layer; j++)
                 {
-                    WeightGen(i, layer);
-                    LayerVectorGen(i, layer);
-                    BiasGen(i, layer);
-                }
-                else
-                {
-                    WeightGen(i, layer);
-                    BiasGen(i, layer);
+                    if(j == 0)
+                    {
+                        LayerVectorGen(i, j);
+                        WeightGen(i, j);
+                        BiasGen(i, j);
+                    }
+                    else
+                    {
+                        WeightGen(i, j);
+                        BiasGen(i, j);
+                    }
                 }
             }
         }
@@ -89,8 +122,9 @@ namespace UpdatedProject
 
         public void WeightGen(int Pass, int layer)
         {
-            GaussianRandomGenerator generator = new GaussianRandomGenerator();
+            SetWeightDimentions(layer);
 
+            GaussianRandomGenerator generator = new GaussianRandomGenerator();
 
             double mean = 0.0;
             double stdDev = 1.0;
@@ -104,9 +138,9 @@ namespace UpdatedProject
                 Console.WriteLine("weights exist");
                 string content = File.ReadAllText(Filename);
                 string[] vals = content.Split(',');
-                for (int i = 0; i < Yweight - 1; i++)
+                for (int i = 0; i < weights.ColumnCount - 1; i++)
                 {
-                    for (int j = 0; j < Xweight - 1; j++)
+                    for (int j = 0; j < weights.RowCount - 1; j++)
                     {
                         weights[i, j] = Convert.ToDouble(vals[k]);
                         k++;
@@ -116,8 +150,8 @@ namespace UpdatedProject
             }
             else
             {
-                string[] vals = new string[Yweight * Xweight];
-                for (int i = 0; i < Yweight * Xweight; i++)
+                string[] vals = new string[weights.ColumnCount * weights.RowCount];
+                for (int i = 0; i < weights.ColumnCount * weights.RowCount; i++)
                 {
                     vals[i] = Convert.ToString(generator.Generate(mean, stdDev));
                 }
@@ -140,9 +174,9 @@ namespace UpdatedProject
 
                 string content = File.ReadAllText(Filename);
                 vals = content.Split(',');
-                for (int i = 0; i < Yweight - 1; i++)
+                for (int i = 0; i < weights.ColumnCount - 1; i++)
                 {
-                    for (int j = 0; j < Xweight - 1; j++)
+                    for (int j = 0; j < weights.RowCount - 1; j++)
                     {
                         weights[i, j] = Convert.ToDouble(vals[k]);
                         k++;
@@ -156,6 +190,8 @@ namespace UpdatedProject
 
         public void BiasGen(int Pass, int layer)
         {
+            SetBiasDimentions(layer);
+
             string filename = $"Pass {Pass}\\layer {layer}\\Bias.txt";
             int k = 0;
 
@@ -165,7 +201,7 @@ namespace UpdatedProject
 
                 string content = File.ReadAllText(filename);
                 string[] vals = content.Split(',');
-                for (int i = 0; i < Yweight; i++)
+                for (int i = 0; i < BiasVector.Count; i++)
                 {
                     BiasVector[i] = Convert.ToDouble(vals[k]);
                     k++;
@@ -173,8 +209,8 @@ namespace UpdatedProject
             }
             else
             {
-                string[] vals = new string[Yweight];
-                for (int i = 0; i < Yweight; i++)
+                string[] vals = new string[BiasVector.Count];
+                for (int i = 0; i < BiasVector.Count; i++)
                 {
                     vals[i] = "0";
                 }
@@ -195,7 +231,7 @@ namespace UpdatedProject
 
                 string content = File.ReadAllText(filename);
                 vals = content.Split(',');
-                for (int i = 0; i < Yweight; i++)
+                for (int i = 0; i < BiasVector.Count; i++)
                 {
                     LayerVector[i] = Convert.ToDouble(vals[k]);
                     k++;
@@ -220,7 +256,7 @@ namespace UpdatedProject
                 Console.WriteLine("node values exist");
                 string content = File.ReadAllText(Filename);
                 string[] vals = content.Split(',');
-                for (int i = 0; i < Xweight - 1; i++)
+                for (int i = 0; i <= LayerVector.Count - 1; i++)
                 {
                     LayerVector[i] = Convert.ToDouble(vals[k]);
                     k++;
@@ -230,7 +266,9 @@ namespace UpdatedProject
             }
             else
             {
-                Vector<double> vals = Vector<double>.Build.DenseOfArray(new Double[Xweight]);
+                Vector<double> vals = Vector<double>.Build.DenseOfArray(new Double[LayerVector.Count]);
+
+
 
                 string filename = $"image_{layer}_";
 
@@ -253,7 +291,8 @@ namespace UpdatedProject
 
                 string content = File.ReadAllText(Filename);
                 string[] values = content.Split(',');
-                for (int i = 0; i < Xweight; i++)
+                Console.WriteLine(LayerVector.Count);
+                for (int i = 0; i < LayerVector.Count; i++)
                 {
                     LayerVector[i] = Convert.ToDouble(values[k]);
                     k++;
@@ -263,6 +302,43 @@ namespace UpdatedProject
 
             }
         }
+
+
+        void SetWeightDimentions(int layer)
+        {
+            GetData getData = new GetData();
+
+            var dimention1 = getData.GetDimentions(layer);
+            var dimention2 = getData.GetDimentions(layer + 1);
+
+            Console.WriteLine(dimention1);
+            Console.WriteLine(dimention2);
+
+            weights = Matrix<double>.Build.Dense(dimention2 , dimention1);
+
+        }
+        void SetBiasDimentions(int layer)
+        {
+            GetData getData = new GetData();
+
+            var dimention2 = getData.GetDimentions(layer + 1);
+
+            BiasVector = Vector<double>.Build.Dense(dimention2);
+            
+        }
+
+        void SetLayerVectorDimentions(int layer)
+        {
+            GetData getData = new GetData();
+
+            var dimention2 = getData.GetDimentions(layer + 1);
+
+            LayerVector = Vector<double>.Build.Dense(dimention2);
+
+        }
+
+
+
     }
     public class GaussianRandomGenerator
     {

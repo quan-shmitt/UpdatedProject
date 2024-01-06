@@ -5,9 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using MathNet.Numerics.LinearAlgebra;
+using System.Text.RegularExpressions;
 
 namespace UpdatedProject
 {
+
     internal class GetData
     {
         private const int Xweight = 784;
@@ -17,7 +19,7 @@ namespace UpdatedProject
 
         public Matrix<double> GetWeight(int Pass, int layer)
         {
-            string Filename = "layer " + layer + "\\Weights.txt";
+            string Filename = $"Pass {Pass}\\layer {layer}\\Weights.txt";
             int k = 0;
             Matrix<double> weights = Matrix<double>.Build.DenseOfArray(new double[Yweight, Xweight]);
 
@@ -41,10 +43,10 @@ namespace UpdatedProject
             }
             else
             {
-                Console.WriteLine("Weights dont exist \n remaking file...");
+                Console.WriteLine("Weights dont exist \n Remaking file...");
                 
-                netinit.WeightGen(layer, Pass);
-                GetWeight(layer, Pass);
+                netinit.WeightGen(Pass, layer);
+                GetWeight(Pass, layer);
                 return weights;
 
             }
@@ -52,7 +54,7 @@ namespace UpdatedProject
 
         public Vector<double> getBias(int Pass, int layer)
         {
-            string filename = $"layer {layer}\\LayerVector.txt";
+            string filename = $"Pass {Pass}\\layer {layer}\\Bias.txt";
             int k = 0;
             Vector<double> BiasVector = Vector<double>.Build.DenseOfArray(new Double[Yweight]);
 
@@ -79,15 +81,47 @@ namespace UpdatedProject
             }
         }
 
-        public void SaveLayorVectors(Vector<double> LayerVector, int layer)
+        public void SaveLayorVectors(Vector<double> LayerVector,int Pass ,int layer)
         {
-            string filename = $"layer {layer}\\LayerVector.txt";
+            string filename = $"Pass {Pass}\\layer {layer}\\LayerVector.txt";
 
             File.WriteAllText(filename, string.Join(",", LayerVector));
         }
 
-    }
 
-    
-    
+        public int GetDimentions(int layer)
+        {
+            string filePath = "Dimentions.txt";
+            string[] Data = File.ReadAllLines(filePath);
+
+            foreach (string data in Data)
+            {
+
+                string pattern = @"layer\d+Dimention\s*=\s*(\d+)";
+                Regex regex = new Regex(pattern);
+
+                Match match = regex.Match(data);
+
+                if (match.Success)
+                {
+                    string dimensionValue = match.Groups[1].Value;
+                    if (int.TryParse(dimensionValue, out int extractedDimension))
+                    {
+                        return extractedDimension;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Failed to convert the extracted string to an integer.");
+                        return 0;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No match found in the string");
+                    return 0;
+                }
+            }
+            return 0;
+        }
+    }
 }

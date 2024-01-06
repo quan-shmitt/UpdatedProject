@@ -22,6 +22,9 @@ namespace UpdatedProject
 
         public void Forwards(Matrix<double> weights, Vector<double> LayerVector,Vector<double> Bias,int Pass ,int Layer, int LayerCount)
         {
+            LayerCount--;
+            Layer++; //indexes to the next layer in the network
+
             string filename = "output";
             
             Vector<double> output = weights * LayerVector + Bias;
@@ -29,20 +32,19 @@ namespace UpdatedProject
             Console.WriteLine(output.ToString());
             Normaliser(output);
             Console.WriteLine(output.ToString());
-            
-            Layer++; //indexes to the next layer in the network
+          
 
             weights = getdata.GetWeight(Pass ,Layer);
             Bias = getdata.getBias(Pass, Layer);
 
 
-
-            getdata.SaveLayorVectors(output, Layer);
+             
+            getdata.SaveLayorVectors(output, Pass, Layer);
             
 
             if(LayerCount != 0)
             {
-                Forwards(weights, Bias, output,Pass ,Layer, LayerCount--);
+                Forwards(weights, Bias, output, Pass, Layer, LayerCount);
             }
             else
             {

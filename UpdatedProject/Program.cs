@@ -20,19 +20,19 @@ namespace UpdatedProject
 
             Console.WriteLine("enter max image count");
             //int imageMaxIndex = Convert.ToInt32(Console.ReadLine());
-            int layer = 0;
+            int Passes = 0;
 
-            pass(layer);
+            pass(Passes);
             
         }
 
 
 
-        static void pass(int layer)
+        static void pass(int Passes)
         {
             int imageMaxIndex = 2;
 
-            NetInIt networkGen = new NetInIt(imageMaxIndex, layer);
+            NetInIt networkGen = new NetInIt(Passes,imageMaxIndex);
 
 
             ForwardPass forwardPass = new ForwardPass();
