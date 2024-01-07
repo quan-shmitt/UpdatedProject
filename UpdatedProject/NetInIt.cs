@@ -1,18 +1,18 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.IO;
+using System.Linq;
+using System.Drawing;
 
 namespace UpdatedProject
 {
     internal class NetInIt
     {
-        static GetData getData = new GetData();
 
         public static ImageHandle imageHandle = new ImageHandle();
 
         public Matrix<double> weights;
 
-        public Vector<double> LayerVector;
 
 
         public Vector<double> BiasVector;
@@ -20,23 +20,10 @@ namespace UpdatedProject
 
         public NetInIt(int Pass, int layer)
         {
-            
-
-            if(getData.GetDimentions(layer) == 0)
-            {
-;
-            }
-            else
-            {
-                SetLayerVectorDimentions(layer);
-            }
-
-            LayerVector = Vector<double>.Build.DenseOfArray(new Double[LayerVector.Count]);
-           
 
             FileGen(Pass, layer);
 
-            LayerGen(Pass, layer);
+            LayerGen(Pass, layer - 1);
 
         }
 
@@ -49,15 +36,15 @@ namespace UpdatedProject
         //heheheha
 
 
-        static public int GetFileDimentions(int layer)
+        static public int GetFileDimentions(int Pass)
         {
-            string filename = $"image_{layer}_";
+            string filename = $"image_{Pass}_";
             string DimFile = "Dimentions.txt";
 
 
-            Vector<double> vals = imageHandle.NormRGB(filename, layer);
+            Vector<double> vals = imageHandle.NormRGB(filename, Pass);
 
-            Console.WriteLine(vals.Count);
+
 
             string existingText;
             using (StreamReader reader = new StreamReader(DimFile))
@@ -76,51 +63,57 @@ namespace UpdatedProject
         }
 
 
-        public void FileGen(int Pass, int Layer)
+        public void FileGen(int Pass, int layer)
         {
-
-
-            for(int i  = 0; i <= Pass; i++)
+            for(int i = 0;i <= Pass; i++)
             {
-                for(int j = 0; j <= Layer; j++)
-                {
-                    string filename = $"Pass {i}\\Layer {j}";
+                string filepath = $"Data\\Pass {i}\\Output";
 
+                if (!File.Exists(filepath))
+                {
                     try
                     {
-                        Directory.CreateDirectory(filename);
+                        Directory.CreateDirectory(filepath);
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         Console.WriteLine($"Error occured: {e}");
                     }
                 }
             }
-        }
-        void LayerGen(int Pass ,int layer)
-        {
-            for (int i = 0;i <= Pass; i++)
+            for(int i = 0; i < layer; i++)
             {
-                for(int j = 0; j <= layer; j++)
+                string filepath = $"Data\\Layer {i}";
+
+                if (!File.Exists(filepath))
                 {
-                    if(j == 0)
+                    try
                     {
-                        LayerVectorGen(i, j);
-                        WeightGen(i, j);
-                        BiasGen(i, j);
+                        Directory.CreateDirectory(filepath);
                     }
-                    else
+                    catch (Exception e)
                     {
-                        WeightGen(i, j);
-                        BiasGen(i, j);
+                        Console.WriteLine($"Error occured: {e}");
                     }
                 }
             }
+
+
+        }
+        void LayerGen(int Pass ,int layer)
+        {
+            for ( int i = 0; i <= layer; i++)
+            {
+                WeightGen(i);
+                BiasGen(i);
+            }
+
+            
         }
 
 
 
-        public void WeightGen(int Pass, int layer)
+        public void WeightGen(int layer)
         {
             SetWeightDimentions(layer);
 
@@ -128,25 +121,24 @@ namespace UpdatedProject
 
             double mean = 0.0;
             double stdDev = 1.0;
-            string Filename = $"Pass {Pass}\\layer {layer}\\Weights.txt";
+            string Filename = $"Data\\Layer {layer}\\Weights.txt";
             int k = 0;
 
 
 
             if (File.Exists(Filename))
             {
-                Console.WriteLine("weights exist");
                 string content = File.ReadAllText(Filename);
                 string[] vals = content.Split(',');
                 for (int i = 0; i < weights.ColumnCount - 1; i++)
                 {
                     for (int j = 0; j < weights.RowCount - 1; j++)
                     {
-                        weights[i, j] = Convert.ToDouble(vals[k]);
+                        weights[j, i] = Convert.ToDouble(vals[k]);
                         k++;
                     }
                 }
-                Console.WriteLine(string.Join(",", weights));
+
             }
             else
             {
@@ -159,7 +151,6 @@ namespace UpdatedProject
                 try
                 {
                     File.WriteAllText(Filename, string.Join(",", vals));
-                    Console.WriteLine("Binary file saved successfully.");
                 }
                 catch (IOException ex)
                 {
@@ -168,36 +159,35 @@ namespace UpdatedProject
                 }
 
 
-                Console.WriteLine("file saved");
+
 
                 Array.Clear(vals, 0, vals.Length);
 
                 string content = File.ReadAllText(Filename);
                 vals = content.Split(',');
-                for (int i = 0; i < weights.ColumnCount - 1; i++)
+                for (int i = 0; i < weights.ColumnCount; i++)
                 {
-                    for (int j = 0; j < weights.RowCount - 1; j++)
+                    for (int j = 0; j < weights.RowCount; j++)
                     {
-                        weights[i, j] = Convert.ToDouble(vals[k]);
+                        weights[j, i] = Convert.ToDouble(vals[k]);
                         k++;
                     }
                 }
-                Console.WriteLine(string.Join(",", weights));
+
 
             }
         }
 
 
-        public void BiasGen(int Pass, int layer)
+        public void BiasGen(int layer)
         {
             SetBiasDimentions(layer);
 
-            string filename = $"Pass {Pass}\\layer {layer}\\Bias.txt";
+            string filename = $"Data\\layer {layer}\\Bias.txt";
             int k = 0;
 
             if (File.Exists(filename))
             {
-                Console.WriteLine("bias exist");
 
                 string content = File.ReadAllText(filename);
                 string[] vals = content.Split(',');
@@ -218,14 +208,13 @@ namespace UpdatedProject
                 try
                 {
                     File.WriteAllText(filename, string.Join(",", vals));
-                    Console.WriteLine("File saved successfully");
                 }
                 catch (IOException ex)
                 {
                     Console.WriteLine($"An error occurred: {ex.Message}");
 
                 }
-                Console.WriteLine("file saved");
+
 
                 Array.Clear(vals, 0, vals.Length);
 
@@ -233,71 +222,9 @@ namespace UpdatedProject
                 vals = content.Split(',');
                 for (int i = 0; i < BiasVector.Count; i++)
                 {
-                    LayerVector[i] = Convert.ToDouble(vals[k]);
+                    BiasVector[i] = Convert.ToDouble(vals[k]);
                     k++;
                 }
-
-
-            }
-        }
-
-
-        void LayerVectorGen(int Pass, int layer)
-        {
-            GaussianRandomGenerator generator = new GaussianRandomGenerator();
-
-            string Filename = $"Pass {Pass}\\layer {layer}\\LayerVectors.txt";
-            int k = 0;
-
-
-
-            if (File.Exists(Filename))
-            {
-                Console.WriteLine("node values exist");
-                string content = File.ReadAllText(Filename);
-                string[] vals = content.Split(',');
-                for (int i = 0; i <= LayerVector.Count - 1; i++)
-                {
-                    LayerVector[i] = Convert.ToDouble(vals[k]);
-                    k++;
-                }
-                Console.WriteLine(LayerVector.ToString());
-
-            }
-            else
-            {
-                Vector<double> vals = Vector<double>.Build.DenseOfArray(new Double[LayerVector.Count]);
-
-
-
-                string filename = $"image_{layer}_";
-
-                vals = imageHandle.NormRGB(filename, layer);
-
-                try
-                {
-                    File.WriteAllText(Filename, string.Join(",", vals));
-                    Console.WriteLine("File saved successfully.");
-                }
-                catch (IOException ex)
-                {
-                    Console.WriteLine($"An error occurred: {ex.Message}");
-                }
-
-
-                Console.WriteLine("file saved");
-
-
-
-                string content = File.ReadAllText(Filename);
-                string[] values = content.Split(',');
-                Console.WriteLine(LayerVector.Count);
-                for (int i = 0; i < LayerVector.Count; i++)
-                {
-                    LayerVector[i] = Convert.ToDouble(values[k]);
-                    k++;
-                }
-                Console.WriteLine(LayerVector.ToString());
 
 
             }
@@ -311,8 +238,6 @@ namespace UpdatedProject
             var dimention1 = getData.GetDimentions(layer);
             var dimention2 = getData.GetDimentions(layer + 1);
 
-            Console.WriteLine(dimention1);
-            Console.WriteLine(dimention2);
 
             weights = Matrix<double>.Build.Dense(dimention2 , dimention1);
 
@@ -326,17 +251,6 @@ namespace UpdatedProject
             BiasVector = Vector<double>.Build.Dense(dimention2);
             
         }
-
-        void SetLayerVectorDimentions(int layer)
-        {
-            GetData getData = new GetData();
-
-            var dimention2 = getData.GetDimentions(layer + 1);
-
-            LayerVector = Vector<double>.Build.Dense(dimention2);
-
-        }
-
 
 
     }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Threading;
 
 namespace UpdatedProject
 {
@@ -14,16 +15,24 @@ namespace UpdatedProject
         const int Yweight = 16;
 
 
+
+
         static void Main(string[] args)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
             Datainit();
 
             Console.WriteLine("enter max image count");
             //int imageMaxIndex = Convert.ToInt32(Console.ReadLine());
-            int Passes = 0;
+            int Passes = 59999;
 
             pass(Passes);
             
+
+
+            Console.WriteLine(sw.Elapsed.ToString());
         }
 
 
@@ -32,12 +41,19 @@ namespace UpdatedProject
         {
             int imageMaxIndex = 2;
 
-            NetInIt networkGen = new NetInIt(Passes,imageMaxIndex);
+            Console.WriteLine("Processing...");
+            NetInIt networkGen = new NetInIt(Passes, imageMaxIndex);
 
+            Parallel.For(0, Passes + 1, i =>
+            {
+                if (!File.Exists($"Data\\Pass {i}\\Output\\LayerVector.txt"))
+                {
+                    ForwardPass forwardPass = new ForwardPass(i);
+                    forwardPass.Forwards(forwardPass.LayerVector, i, 0, imageMaxIndex);
+                }
+            });
 
-            ForwardPass forwardPass = new ForwardPass();
-            forwardPass.Forwards(networkGen.weights,networkGen.LayerVector, networkGen.BiasVector,0 , 0, imageMaxIndex);
-
+            Console.WriteLine("Finished");
         }
 
 

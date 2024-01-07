@@ -16,7 +16,8 @@ namespace UpdatedProject
         public Vector<double> NormRGB(string path, int index)
         {
 
-            Console.WriteLine(path);
+
+
             Vector<double> RGBVal = Vector<double>.Build.DenseOfArray(new Double[Xweight]);
 
             try
@@ -28,11 +29,9 @@ namespace UpdatedProject
 
                 string filenameToCheck = $"image_{index}_";
 
-                Console.WriteLine("checking for file...");
+
                 if (fileNames.Any(fileName => fileName.Contains(filenameToCheck)))
                 {
-                    Console.WriteLine($"file exists {filenameToCheck}");
-                    Console.WriteLine($"file exists {fileNames[index]}");
                     using (Bitmap image = new Bitmap(fileNames[index]))
                     {
                         for (int y = 0; y < image.Height; y++)

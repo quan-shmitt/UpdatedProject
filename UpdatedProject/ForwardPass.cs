@@ -12,44 +12,38 @@ namespace UpdatedProject
     {
 
         public Vector<double> output;
+        public Vector<double> LayerVector;
 
         GetData getdata = new GetData();
 
-        public ForwardPass()
+        public ForwardPass(int Pass)
         {
-            
+            LayerVector = getdata.LayerVectorGen(Pass);
         }
 
-        public void Forwards(Matrix<double> weights, Vector<double> LayerVector,Vector<double> Bias,int Pass ,int Layer, int LayerCount)
+        public void Forwards(Vector<double> LayerVector ,int Pass ,int Layer, int LayerCount)
         {
+
+            Matrix<double> weights = getdata.GetWeight(Layer);
+            Vector<double> Bias = getdata.getBias(Layer);
+
             LayerCount--;
             Layer++; //indexes to the next layer in the network
-
-            string filename = "output";
             
-            Vector<double> output = weights * LayerVector + Bias;
+            output = weights * LayerVector + Bias;
 
-            Console.WriteLine(output.ToString());
             Normaliser(output);
-            Console.WriteLine(output.ToString());
-          
-
-            weights = getdata.GetWeight(Pass ,Layer);
-            Bias = getdata.getBias(Pass, Layer);
-
-
-             
-            getdata.SaveLayorVectors(output, Pass, Layer);
             
 
-            if(LayerCount != 0)
+
+            if(LayerCount != 0 ) 
             {
-                Forwards(weights, Bias, output, Pass, Layer, LayerCount);
+                weights = getdata.GetWeight(Layer);
+                Bias = getdata.getBias(Layer);
+                Forwards(output, Pass, Layer, LayerCount);
+
             }
-            else
-            {
-                File.WriteAllText(filename, string.Join(",", output));
-            }
+            getdata.SaveLayorVectors(output, Pass, Layer);
 
         }
 
@@ -62,7 +56,7 @@ namespace UpdatedProject
         {
             for (int i = 0; i < x.Count(); i++)
             {
-                x[i] = Math.Max(0, x[i]);
+                x[i] = 1.0 / (1.0 + Math.Exp(-x[i]));
             }
         }
     }

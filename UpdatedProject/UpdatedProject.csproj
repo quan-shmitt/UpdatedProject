@@ -47,11 +47,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Backpropagation.cs" />
     <Compile Include="ForwardPass.cs" />
     <Compile Include="GetData.cs" />
     <Compile Include="ImageHandle.cs" />
     <Compile Include="NetInIt.cs" />
-    <Compile Include="Pass.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
