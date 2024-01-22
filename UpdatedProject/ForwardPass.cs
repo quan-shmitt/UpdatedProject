@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,8 +11,9 @@ namespace UpdatedProject
 {
     internal class ForwardPass
     {
+        public List<Vector<double>> Cache = new List<Vector<double>>();
 
-        public Vector<double> output;
+        Vector<double> output;
         public Vector<double> LayerVector;
 
         GetData getdata = new GetData();
@@ -19,10 +21,13 @@ namespace UpdatedProject
         public ForwardPass(int Pass)
         {
             LayerVector = getdata.LayerVectorGen(Pass);
+
         }
 
         public void Forwards(Vector<double> LayerVector ,int Pass ,int Layer, int LayerCount)
         {
+            Cache.Add(LayerVector);
+            
 
             Matrix<double> weights = getdata.GetWeight(Layer);
             Vector<double> Bias = getdata.getBias(Layer);

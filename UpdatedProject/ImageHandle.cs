@@ -6,12 +6,35 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
+using static System.Net.Mime.MediaTypeNames;
+using System.Text.RegularExpressions;
 
 namespace UpdatedProject
 {
     internal class ImageHandle
     {
         private const int Xweight = 784;
+
+
+        public int Label(int index)
+        {
+            string pattern = $"image_{index}_label_(\\d+)";
+
+            string[] fileNames = Directory.EnumerateFiles("images")
+                                       .OrderBy(filename => ExtractNumberFromFilename(filename))
+                                       .ToArray();
+
+            Match match = Regex.Match(fileNames[index], pattern);
+
+            if (match.Success)
+            {
+                string numberAfterLabel = match.Groups[1].Value;
+                return Convert.ToInt32(numberAfterLabel);
+            }
+            else { return 0; }
+        }
+
+
 
         public Vector<double> NormRGB(string path, int index)
         {
