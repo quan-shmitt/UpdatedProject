@@ -1,5 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 
@@ -10,28 +11,48 @@ namespace UpdatedProject
         ImageHandle label = new ImageHandle();
         public GetData getData = new GetData();
 
+        List<Matrix<double>> Weights = new List<Matrix<double>>();
+        List<Vector<double>> Bias = new List<Vector<double>>(); 
 
-        void BackProp(Vector<double>[] Input, Matrix<double> Weights, Vector<double> Bias, Vector<double> Output, Vector<double> ActualVal, int LearningRate, int layer)
+        public Backpropagation(int layer)
         {
-            var error = Output - ActualVal;
-            var DeltaOutput = error.PointwiseMultiply(SigmoidDerivative(ActualVal));
+            Weights.Add(getData.GetWeight(layer - 1));
+            Weights.Add(getData.GetWeight(layer));
+
+            Bias.Add(getData.getBias(layer));
+            Bias.Add(getData.getBias(layer - 1));
+
+        }
+
+        public void BackProp(List<Vector<double>> Input, Vector<double> Output, double LearningRate, int layer)
+        {
+
+            var error = Output - Input[layer];
+            var DeltaOutput = error.PointwiseMultiply(SigmoidDerivative(Input[layer]));
 
             double DeltaWeights = (Input[layer - 1] * (LearningRate) * DeltaOutput);
-            Weights -= DeltaWeights;
+            Weights[layer] -= DeltaWeights;
 
 
-            Bias = Bias.Subtract(LearningRate * DeltaOutput.Sum());
+            Bias[layer] -=(LearningRate * DeltaOutput.Sum());
+            getData.SaveWeights(Weights[layer], layer);
+            getData.SaveBias(Bias[layer], layer);
 
+            layer--;
 
+            while (layer > 0)
+            {
+                var hiddenError = DeltaOutput * Weights[layer].Transpose() * SigmoidDerivative(Input[layer]);
+                var DeltaHidden = hiddenError * sigmoid(Input[layer]);
+                Weights[layer] -= (LearningRate * Input[layer] * DeltaHidden);
 
+                Bias[layer] -= (LearningRate * DeltaHidden.Sum());
 
+                getData.SaveWeights(Weights[layer], layer);
+                getData.SaveBias(Bias[layer], layer);
 
-            var hiddenError = DeltaOutput * Weights.Transpose() * SigmoidDerivative(Input[layer - 1]);
-            Weights = getData.GetWeight(layer - 1);
-            var DeltaHidden = hiddenError * sigmoid(Input[layer - 1]);
-            Weights = Weights - (LearningRate * Input[layer - 1] * DeltaHidden);
-
-            Bias = Bias.Subtract(LearningRate * DeltaHidden.Sum());
+                layer--;
+            }
         }
 
 

@@ -26,7 +26,7 @@ namespace UpdatedProject
 
             Console.WriteLine("enter max image count");
             //int imageMaxIndex = Convert.ToInt32(Console.ReadLine());
-            int Passes = 59999;
+            int Passes = 100;
 
             pass(Passes);
             
@@ -39,6 +39,10 @@ namespace UpdatedProject
 
         static void pass(int Passes)
         {
+
+            GetData getData = new GetData();
+            ImageHandle image = new ImageHandle();  
+
             int imageMaxIndex = 2;
 
             Console.WriteLine("Processing...");
@@ -46,11 +50,13 @@ namespace UpdatedProject
 
             Parallel.For(0, Passes + 1, i =>
             {
+                ForwardPass forwardPass = new ForwardPass(i);
                 if (!File.Exists($"Data\\Pass {i}\\Output\\LayerVector.txt"))
                 {
-                    ForwardPass forwardPass = new ForwardPass(i);
                     forwardPass.Forwards(forwardPass.LayerVector, i, 0, imageMaxIndex);
                 }
+                Backpropagation backpropagation = new Backpropagation(imageMaxIndex);
+                backpropagation.BackProp(forwardPass.Cache, image.Label((int)i, getData.GetDimentions(2)), 0.05, imageMaxIndex);
             });
 
             Console.WriteLine("Finished");

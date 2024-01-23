@@ -91,6 +91,18 @@ namespace UpdatedProject
             return LayerVector;
         }
 
+        public void SaveWeights(Matrix<double> weights, int layer)
+        {
+            string filename = $"Data\\Layer {layer}\\Weights.txt";
+            File.WriteAllText(filename, string.Join(",", weights));
+        }
+        
+        public void SaveBias(Vector<double> Bias, int layer)
+        {
+            string filename = $"Data\\Layer {layer}\\Bias.txt";
+            File.WriteAllText(filename, string.Join(",", Bias));
+        }
+
         public void SaveLayorVectors(Vector<double> LayerVector,int Pass ,int layer)
         {
             string filename = $"Data\\Pass {Pass}\\Output\\LayerVector.txt";
@@ -108,6 +120,7 @@ namespace UpdatedProject
             string pattern = @"layer\d+Dimention\s*=\s*(\d+)";
             Regex regex = new Regex(pattern);
 
+            Console.Write(layer);
             Match match = regex.Match(Data[layer]);
 
             if (match.Success)

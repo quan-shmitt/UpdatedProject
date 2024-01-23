@@ -16,8 +16,11 @@ namespace UpdatedProject
         private const int Xweight = 784;
 
 
-        public int Label(int index)
+        public Vector<double> Label(int index, int dimentionSize)
         {
+            Vector<double> label = Vector<double>.Build.DenseOfArray(new double[dimentionSize]);
+
+
             string pattern = $"image_{index}_label_(\\d+)";
 
             string[] fileNames = Directory.EnumerateFiles("images")
@@ -29,9 +32,10 @@ namespace UpdatedProject
             if (match.Success)
             {
                 string numberAfterLabel = match.Groups[1].Value;
-                return Convert.ToInt32(numberAfterLabel);
+                label[Convert.ToInt32(numberAfterLabel)] = 1;
+                return label;
             }
-            else { return 0; }
+            else { return label; }
         }
 
 
