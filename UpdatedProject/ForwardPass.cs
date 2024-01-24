@@ -18,8 +18,9 @@ namespace UpdatedProject
 
         GetData getdata = new GetData();
 
-        public ForwardPass(int Pass)
+        public ForwardPass(int Pass, int Layers)
         {
+            Cache = new Vector<double>[Layers];
             LayerVector = getdata.LayerVectorGen(Pass);
 
         }
