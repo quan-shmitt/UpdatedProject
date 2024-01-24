@@ -11,13 +11,17 @@ namespace UpdatedProject
     internal class ForwardPass
     {
 
+        Vector<double>[] Cache;
+
+
         public Vector<double> output;
         public Vector<double> LayerVector;
 
         GetData getdata = new GetData();
 
-        public ForwardPass(int Pass)
+        public ForwardPass(int Pass, int Layers)
         {
+            Cache = new Vector<double>[Layers];
             LayerVector = getdata.LayerVectorGen(Pass);
         }
 

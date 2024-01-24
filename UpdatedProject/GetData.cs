@@ -101,11 +101,11 @@ namespace UpdatedProject
 
         public int GetDimentions(int layer)
         {
-            string filePath = "Dimentions.txt";
+            string filePath = "Dimensions.txt";
             string[] Data = File.ReadAllLines(filePath);
 
 
-            string pattern = @"layer\d+Dimention\s*=\s*(\d+)";
+            string pattern = $"layer{layer}Dimension\\s*=\\s*(\\d+)";
             Regex regex = new Regex(pattern);
 
             Match match = regex.Match(Data[layer]);
