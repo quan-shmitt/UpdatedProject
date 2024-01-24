@@ -113,6 +113,7 @@ namespace UpdatedProject
 
         public int GetDimentions(int layer)
         {
+
             string filePath = "Dimensions.txt";
             string[] Data = File.ReadAllLines(filePath);
 
@@ -120,7 +121,7 @@ namespace UpdatedProject
             string pattern = $"layer{layer}Dimension\\s*=\\s*(\\d+)";
             Regex regex = new Regex(pattern);
 
-            Console.Write(layer);
+
             Match match = regex.Match(Data[layer]);
 
             if (match.Success)

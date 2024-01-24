@@ -50,13 +50,13 @@ namespace UpdatedProject
 
             Parallel.For(0, Passes + 1, i =>
             {
-                ForwardPass forwardPass = new ForwardPass(i);
+                ForwardPass forwardPass = new ForwardPass(i, imageMaxIndex);
                 if (!File.Exists($"Data\\Pass {i}\\Output\\LayerVector.txt"))
                 {
                     forwardPass.Forwards(forwardPass.LayerVector, i, 0, imageMaxIndex);
                 }
-                Backpropagation backpropagation = new Backpropagation(imageMaxIndex);
-                backpropagation.BackProp(forwardPass.Cache, image.Label((int)i, getData.GetDimentions(2)), 0.05, imageMaxIndex);
+                Backpropagation backpropagation = new Backpropagation(imageMaxIndex - 1);
+                backpropagation.BackProp(forwardPass.Cache, image.Label(Convert.ToInt32(i), 10), 0.05, imageMaxIndex);
             });
 
             Console.WriteLine("Finished");

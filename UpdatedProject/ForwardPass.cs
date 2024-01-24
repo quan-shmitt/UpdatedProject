@@ -20,7 +20,7 @@ namespace UpdatedProject
 
         public ForwardPass(int Pass, int Layers)
         {
-            Cache = new Vector<double>[Layers];
+            Cache = new List<Vector<double>>();
             LayerVector = getdata.LayerVectorGen(Pass);
 
         }

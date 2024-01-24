@@ -16,12 +16,16 @@ namespace UpdatedProject
 
         public Backpropagation(int layer)
         {
-            Weights.Add(getData.GetWeight(layer - 1));
-            Weights.Add(getData.GetWeight(layer));
 
-            Bias.Add(getData.getBias(layer));
-            Bias.Add(getData.getBias(layer - 1));
+            for (int i = 0; i < layer; i++)
+            {
+                Weights.Add(getData.GetWeight(i));
+            }
 
+            for (int i = 0; i < layer; i++)
+            {
+                Bias.Add(getData.getBias(i));
+            }
         }
 
         public void BackProp(List<Vector<double>> Input, Vector<double> Output, double LearningRate, int layer)
