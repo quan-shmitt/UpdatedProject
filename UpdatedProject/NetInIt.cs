@@ -1,8 +1,6 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.IO;
-using System.Linq;
-using System.Drawing;
 
 namespace UpdatedProject
 {
@@ -65,7 +63,7 @@ namespace UpdatedProject
 
         public void FileGen(int Pass, int layer)
         {
-            for(int i = 0;i <= Pass; i++)
+            for (int i = 0; i <= Pass; i++)
             {
                 string filepath = $"Data\\Pass {i}\\Output";
 
@@ -81,7 +79,7 @@ namespace UpdatedProject
                     }
                 }
             }
-            for(int i = 0; i < layer; i++)
+            for (int i = 0; i < layer; i++)
             {
                 string filepath = $"Data\\Layer {i}";
 
@@ -100,15 +98,15 @@ namespace UpdatedProject
 
 
         }
-        void LayerGen(int Pass ,int layer)
+        void LayerGen(int Pass, int layer)
         {
-            for ( int i = 0; i <= layer; i++)
+            for (int i = 0; i <= layer; i++)
             {
                 WeightGen(i);
                 BiasGen(i);
             }
 
-            
+
         }
 
 
@@ -239,7 +237,7 @@ namespace UpdatedProject
             var dimention2 = getData.GetDimentions(layer + 1);
 
 
-            weights = Matrix<double>.Build.Dense(dimention2 , dimention1);
+            weights = Matrix<double>.Build.Dense(dimention2, dimention1);
 
         }
         void SetBiasDimentions(int layer)
@@ -249,7 +247,7 @@ namespace UpdatedProject
             var dimention2 = getData.GetDimentions(layer + 1);
 
             BiasVector = Vector<double>.Build.Dense(dimention2);
-            
+
         }
 
 
