@@ -1,6 +1,13 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using Apache.Arrow;
+using Apache.Arrow.Ipc;
+using Apache.Arrow.Types;
+using System.Management.Instrumentation;
+using System.Collections.Generic;
 
 namespace UpdatedProject
 {
@@ -32,6 +39,90 @@ namespace UpdatedProject
 
         }
         //heheheha
+
+        void ParguetGen()
+        {
+            // Generate sample data
+            var data = GenerateSampleData();
+
+            // Create schema with 1000 columns
+            var schema = CreateSchema(1000);
+
+            // Create Arrow table with 3 records
+            var table = CreateArrowTable(schema, data);
+
+            // Write Arrow table to Parquet file
+            WriteToParquet(table, "output.parquet");
+
+            Console.WriteLine("Parquet file created successfully.");
+        }
+        static List<Vector<double>> GenerateSampleData()
+        {
+            // Generate sample data (replace with your own logic)
+            var data = new List<Vector<double>>();
+            var rng = new Random();
+
+            for (int i = 0; i < 3; i++)
+            {
+                var vector = Vector<double>.Build.Dense(1000, j => rng.NextDouble());
+                data.Add(vector);
+            }
+
+            return data;
+        }
+
+        static Schema CreateSchema(int numColumns)
+        {
+            var fields = new List<Field>();
+
+            for (int i = 0; i < numColumns; i++)
+            {
+                var fieldName = $"layer_{i + 1}";
+                var metadata = new Dictionary<string, string>
+                {
+                    { "description", $"Description for {fieldName}" },
+                    { "customMetadata", "Any custom metadata here" }
+                 // Add more metadata as needed
+                };
+
+                var field = new Field(fieldName, new ListType(FloatType.Default), false, metadata);
+                fields.Add(field);
+            }
+
+            return new Schema(fields);
+        }
+
+        static Table CreateArrowTable(Schema schema, List<Vector<double>> data)
+        {
+            // Create Arrow table with the specified schema and data
+            var recordBatches = new List<RecordBatch>();
+
+            for (int i = 0; i < data.Count; i++)
+            {
+                var vectors = data[i];
+                var recordBatchBuilder = new RecordBatchBuilder(schema);
+
+                for (int j = 0; j < schema.Fields.Count; j++)
+                {
+                    recordBatchBuilder.GetFieldBuilder<ListBuilder<double>>(j).Append(vectors[j]);
+                }
+
+                var recordBatch = recordBatchBuilder.Build();
+                recordBatches.Add(recordBatch);
+            }
+
+            return new Table(schema, recordBatches);
+        }
+
+        static void WriteToParquet(Table table, string outputPath)
+        {
+            // Write Arrow table to Parquet file
+            using (var fileWriter = new ParquetFileWriter(outputPath, table.Schema))
+            {
+                fileWriter.WriteTable(table);
+            }
+        }
+
 
 
         static public int GetFileDimentions(int Pass)
@@ -159,7 +250,7 @@ namespace UpdatedProject
 
 
 
-                Array.Clear(vals, 0, vals.Length);
+                System.Array.Clear(vals, 0, vals.Length);
 
                 string content = File.ReadAllText(Filename);
                 vals = content.Split(',');
@@ -214,7 +305,7 @@ namespace UpdatedProject
                 }
 
 
-                Array.Clear(vals, 0, vals.Length);
+                System.Array.Clear(vals, 0, vals.Length);
 
                 string content = File.ReadAllText(filename);
                 vals = content.Split(',');
