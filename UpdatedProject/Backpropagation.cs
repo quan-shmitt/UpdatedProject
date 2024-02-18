@@ -1,15 +1,17 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
+using System.Configuration.Assemblies;
 using System.IO;
-
+using System.Linq;
+using System.Threading;
 
 namespace UpdatedProject
 {
     internal class Backpropagation
     {
         ImageHandle label = new ImageHandle();
-        public GetData getData = new GetData();
+        public ManageData getData = new ManageData();
 
         List<Matrix<double>> Weights = new List<Matrix<double>>();
         List<Vector<double>> Bias = new List<Vector<double>>(); 
@@ -28,60 +30,117 @@ namespace UpdatedProject
             }
         }
 
-        public void BackProp(List<Vector<double>> Input, Vector<double> Output, double LearningRate, int layer)
+        public void BackProp(List<Vector<double>> LayerVectors ,Vector<double> Target, double LearningRate, int layer)
         {
+            Program.cost += CalculateSparseCategoricalCrossEntropy(LayerVectors[layer], Convert.ToInt32(Target.MaximumIndex()));
 
-            var error = Output - Input[layer];
-            var DeltaOutput = error.PointwiseMultiply(SigmoidDerivative(Input[layer]));
+            LayerVectors[layer] = Softmax(LayerVectors[layer]);
 
-            double DeltaWeights = (Input[layer - 1] * (LearningRate) * DeltaOutput);
-            Weights[layer] -= DeltaWeights;
+            Vector<double> gradientWrtLogits = LayerVectors[layer] - Target;
+
+            Vector<double> gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(ReLU_Derivative(Softmax(LayerVectors[layer])));
+
+            Vector<double> gradientWrtBiases = gradientWrtLogits;
+
+            
 
 
-            Bias[layer] -=(LearningRate * DeltaOutput.Sum());
-            getData.SaveWeights(Weights[layer], layer);
-            getData.SaveBias(Bias[layer], layer);
+            for(int i = 0; i < Weights[layer - 1].RowCount; i++)
+            {
+                for(int j = 0; j < Weights[layer - 1].ColumnCount; j++)
+                {
+                    (Weights[layer - 1])[i, j] -= LearningRate * gradientWrtWeights[i];
+                }
+            }
+
+            Bias[layer - 1] -= LearningRate * gradientWrtBiases;
+
+            getData.SaveWeights(Weights[layer - 1], layer - 1);
+            getData.SaveBias(Bias[layer - 1], layer - 1);
+
 
             layer--;
 
             while (layer > 0)
             {
-                var hiddenError = DeltaOutput * Weights[layer].Transpose() * SigmoidDerivative(Input[layer]);
-                var DeltaHidden = hiddenError * sigmoid(Input[layer]);
-                Weights[layer] -= (LearningRate * Input[layer] * DeltaHidden);
 
-                Bias[layer] -= (LearningRate * DeltaHidden.Sum());
+                gradientWrtWeights = (Softmax(LayerVectors[layer])).PointwiseMultiply(LayerVectors[layer]).Multiply(Target.MaximumIndex() == LayerVectors[layer].MaximumIndex() ? 1.0 : 0.0);
 
-                getData.SaveWeights(Weights[layer], layer);
-                getData.SaveBias(Bias[layer], layer);
+                gradientWrtBiases = (Softmax(LayerVectors[(layer)])) * (Target.MaximumIndex() == LayerVectors[layer].MaximumIndex() ? 1.0 : 0.0);
+
+
+                for (int i = 0; i < Weights[layer - 1].RowCount; i++)
+                {
+                    for (int j = 0; j < Weights[layer - 1].ColumnCount; j++)
+                    {
+                        (Weights[layer - 1])[i, j] -= LearningRate * gradientWrtWeights[i];
+                    }
+                }
+
+
+                Bias[layer - 1] -= LearningRate * gradientWrtBiases;
+
+                getData.SaveWeights(Weights[layer - 1], layer - 1);
+                getData.SaveBias(Bias[layer - 1], layer - 1);
 
                 layer--;
             }
         }
 
-
-        Vector<double> sigmoid(Vector<double> x)
+        static double CalculateSparseCategoricalCrossEntropy(Vector<double> predictedProbabilities, int trueLabel)
         {
-            Vector<double> y = Vector<double>.Build.DenseOfArray(new double[x.Count]);
-            foreach (var v in x)
+            if (predictedProbabilities == null || predictedProbabilities.Count == 0)
             {
-                y.Add(1 / (1 + Math.Exp(-v)));
-            }
-            return y;
-        }
-
-        Vector<double> SigmoidDerivative(Vector<double> x)
-        {
-            Vector<double> y = Vector<double>.Build.DenseOfArray(new double[x.Count]);
-            var negative = sigmoid(x);
-
-            foreach (var v in negative)
-            {
-                y.Add(1 - v);
+                throw new ArgumentException("Invalid predicted probabilities array");
             }
 
-            return negative.PointwiseMultiply(y);
+            if (trueLabel < 0 || trueLabel >= predictedProbabilities.Count)
+            {
+                throw new ArgumentException("Invalid true label index");
+            }
 
+            double epsilon = 1e-15; // Small value to prevent log(0) errors
+            double[] logProbabilities = new double[predictedProbabilities.Count];
+
+            // Calculate log probabilities
+            for (int i = 0; i < predictedProbabilities.Count; i++)
+            {
+                // Use a small epsilon to avoid log(0) errors
+                logProbabilities[i] = Math.Log(Math.Max(predictedProbabilities[i], epsilon));
+            }
+
+            // Calculate sparse categorical cross entropy loss
+            double loss = -logProbabilities[trueLabel];
+
+            return loss;
         }
+
+
+        Vector<double> ReLU(Vector<double> x)
+        {
+            return x.PointwiseMaximum(0);
+        }
+
+        // Derivative of ReLU activation function
+        Vector<double> ReLU_Derivative(Vector<double> x)
+        {
+            return x.PointwiseSign();
+        }
+
+        static Vector<double> Softmax(Vector<double> logits)
+        {
+            // Avoid numerical instability by subtracting the maximum logit
+            double maxLogit = logits.Maximum();
+            Vector<double> expLogits = logits.Subtract(maxLogit).PointwiseExp();
+
+            // Calculate the sum of exponentials
+            double sumExp = expLogits.Sum();
+
+            // Compute the softmax probabilities
+            Vector<double> probabilities = expLogits.Divide(sumExp);
+
+            return probabilities;
+        }
+
     }
 }

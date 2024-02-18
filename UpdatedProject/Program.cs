@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Threading;
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Complex;
 
 namespace UpdatedProject
 {
@@ -14,50 +16,76 @@ namespace UpdatedProject
         const int Xweight = 784;
         const int Yweight = 16;
 
+        static int LayerCount = 2;
 
+
+
+        static public object filelock = new object();
+        static public bool isfree = true;
+
+        static public double cost = 0;
 
 
         static void Main(string[] args)
         {
+            ManageData manageData = new ManageData();
+
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
             Datainit();
 
-            Console.WriteLine("enter max image count");
-            //int imageMaxIndex = Convert.ToInt32(Console.ReadLine());
-            int Passes = 100;
+            Console.WriteLine("Test or Train: \n");
+            string ProcessDirector = Console.ReadLine();
+            if(ProcessDirector.ToUpper() == "TEST")
+            {
+                PredictInput predictInput = new PredictInput();
+                predictInput.FindNumInPicture(LayerCount);
+            }
+            else
+            {
+                Console.WriteLine("enter max image count");
 
-            pass(Passes);
-            
+                int Passes = 100;
+                int epochs = 4;
 
+                pass(Passes, epochs);
+            }
 
             Console.WriteLine(sw.Elapsed.ToString());
         }
 
 
 
-        static void pass(int Passes)
+        static void pass(int Passes, int epoch)
         {
+            ManageData manageData = new ManageData();
 
-            GetData getData = new GetData();
+
             ImageHandle image = new ImageHandle();  
 
-            int imageMaxIndex = 2;
-
             Console.WriteLine("Processing...");
-            NetInIt networkGen = new NetInIt(Passes, imageMaxIndex);
+            NetInIt networkGen = new NetInIt(Passes, LayerCount, Passes);
 
-            Parallel.For(0, Passes + 1, i =>
+            for (int j = 0; j < epoch; j++)
             {
-                ForwardPass forwardPass = new ForwardPass(i, imageMaxIndex);
-                if (!File.Exists($"Data\\Pass {i}\\Output\\LayerVector.txt"))
+                Parallel.For(0, Passes + 1, i =>
                 {
-                    forwardPass.Forwards(forwardPass.LayerVector, i, 0, imageMaxIndex);
-                }
-                Backpropagation backpropagation = new Backpropagation(imageMaxIndex - 1);
-                backpropagation.BackProp(forwardPass.Cache, image.Label(Convert.ToInt32(i), 10), 0.05, imageMaxIndex);
-            });
+                    MLP forwardPass = new MLP(i, LayerCount);
+                    if (!File.Exists($"Data\\Pass {i}\\Output\\LayerVector.txt"))
+                    {
+                        forwardPass.Forwards(forwardPass.LayerVector, 0, LayerCount);
+                    }
+                    Backpropagation backpropagation = new Backpropagation(LayerCount);
+
+                    List<Vector<double>> Input = forwardPass.Cache;
+
+                    backpropagation.BackProp(Input, image.Label(Convert.ToInt32(i), 10), 0.05, LayerCount);
+                });
+                Console.WriteLine(cost);
+                cost = 0;
+            }
+
 
             Console.WriteLine("Finished");
         }

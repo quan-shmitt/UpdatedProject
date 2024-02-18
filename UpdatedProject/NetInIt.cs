@@ -1,6 +1,8 @@
-﻿using MathNet.Numerics.LinearAlgebra;
+﻿using HDF.PInvoke;
+using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace UpdatedProject
 {
@@ -16,12 +18,14 @@ namespace UpdatedProject
         public Vector<double> BiasVector;
 
 
-        public NetInIt(int Pass, int layer)
+        public NetInIt(int Pass, int layerCount, int MaxImageCount)
         {
 
-            FileGen(Pass, layer);
+            //CreateParentDataset(Convert.ToUInt32(MaxImageCount));
 
-            LayerGen(Pass, layer - 1);
+            fileGen(layerCount);
+
+            LayerGen(Pass, layerCount - 1);
 
         }
 
@@ -32,7 +36,59 @@ namespace UpdatedProject
 
         }
         //heheheha
+        public void CreateParentDataset(uint parentNumRows)
+        {
+            
+            string fileName = "Database.h5";
 
+            if (!File.Exists(fileName))
+            {
+                try
+                {
+                    // Dimensions for the parent dataset
+                    uint parentNumCols = 1;
+
+                    // Initialize the HDF5 library
+                    H5.open();
+
+                    // Create a new HDF5 file
+                    var fileId = H5F.create(fileName, H5F.ACC_TRUNC);
+
+                    // Create a dataspace for the parent dataset
+                    ulong[] parentDims = { parentNumRows, parentNumCols };
+                    var parentDataspaceId = H5S.create_simple(2, parentDims, null);
+
+                    // Create a parent dataset within the file
+                    var parentDatasetId = H5D.create(fileId, "parent_dataset", H5T.NATIVE_DOUBLE, parentDataspaceId);
+
+                    // Generate sample data for the parent dataset
+                    double[] parentData = new double[parentNumRows];
+                    for (uint i = 0; i < parentNumRows; i++)
+                    {
+                        parentData[i] = i + 1.0; // Incrementing by one as a double
+                    }
+
+                    // Write data to the parent dataset
+                    GCHandle parentHandle = GCHandle.Alloc(parentData, GCHandleType.Pinned);
+                    H5D.write(parentDatasetId, H5T.NATIVE_DOUBLE, H5S.ALL, H5S.ALL, H5P.DEFAULT, parentHandle.AddrOfPinnedObject());
+                    parentHandle.Free();
+
+                    // Close resources for the parent dataset
+                    H5D.close(parentDatasetId);
+                    H5S.close(parentDataspaceId);
+
+                    // Close the HDF5 file
+                    H5F.close(fileId);
+
+                    // Close the HDF5 library
+                    H5.close();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"An Error occured: {e}");
+                }
+            }
+        }
 
         static public int GetFileDimentions(int Pass)
         {
@@ -40,7 +96,7 @@ namespace UpdatedProject
             string DimFile = "Dimentions.txt";
 
 
-            Vector<double> vals = imageHandle.NormRGB(filename, Pass);
+            Matrix<double> vals = imageHandle.NormRGB(filename, Pass);
 
 
 
@@ -53,51 +109,25 @@ namespace UpdatedProject
             // Write the new text and then the existing content back to the file
             using (StreamWriter writer = new StreamWriter(DimFile))
             {
-                writer.Write($"layer0Dimention = {vals.Count}");
+                writer.Write($"layer0Dimention = {vals.ColumnCount * vals.RowCount}");
                 writer.Write(existingText);
             }
 
-            return vals.Count;
+            return vals.ColumnCount * vals.RowCount;
         }
 
-
-        public void FileGen(int Pass, int layer)
+        void fileGen(int layer)
         {
-            for (int i = 0; i <= Pass; i++)
-            {
-                string filepath = $"Data\\Pass {i}\\Output";
-
-                if (!File.Exists(filepath))
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(filepath);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"Error occured: {e}");
-                    }
-                }
-            }
             for (int i = 0; i < layer; i++)
             {
-                string filepath = $"Data\\Layer {i}";
-
-                if (!File.Exists(filepath))
+                string filename = $"Data\\Layer {i}";
+                if (!File.Exists(filename))
                 {
-                    try
-                    {
-                        Directory.CreateDirectory(filepath);
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine($"Error occured: {e}");
-                    }
+                    Directory.CreateDirectory(filename);
                 }
             }
-
-
         }
+
         void LayerGen(int Pass, int layer)
         {
             for (int i = 0; i <= layer; i++)
@@ -105,8 +135,6 @@ namespace UpdatedProject
                 WeightGen(i);
                 BiasGen(i);
             }
-
-
         }
 
 
@@ -231,7 +259,7 @@ namespace UpdatedProject
 
         void SetWeightDimentions(int layer)
         {
-            GetData getData = new GetData();
+            ManageData getData = new ManageData();
 
             var dimention1 = getData.GetDimentions(layer);
             var dimention2 = getData.GetDimentions(layer + 1);
@@ -242,7 +270,7 @@ namespace UpdatedProject
         }
         void SetBiasDimentions(int layer)
         {
-            GetData getData = new GetData();
+            ManageData getData = new ManageData();
 
             var dimention2 = getData.GetDimentions(layer + 1);
 
