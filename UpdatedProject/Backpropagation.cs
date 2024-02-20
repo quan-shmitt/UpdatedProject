@@ -32,13 +32,18 @@ namespace UpdatedProject
 
         public void BackProp(List<Vector<double>> LayerVectors ,Vector<double> Target, double LearningRate, int layer)
         {
+            LayerVectors[layer] = Softmax(LayerVectors[layer]);
+
             Program.cost += CalculateSparseCategoricalCrossEntropy(LayerVectors[layer], Convert.ToInt32(Target.MaximumIndex()));
 
-            LayerVectors[layer] = Softmax(LayerVectors[layer]);
+
+            Vector<double> gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(LayerVectors[layer] - Target) * (Target.MaximumIndex() == LayerVectors[layer].MaximumIndex() ? 1.0 : 0.0); ;
+
+
 
             Vector<double> gradientWrtLogits = LayerVectors[layer] - Target;
 
-            Vector<double> gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(ReLU_Derivative(Softmax(LayerVectors[layer])));
+         //   Vector<double> gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(ReLU_Derivative(Softmax(LayerVectors[layer])));
 
             Vector<double> gradientWrtBiases = gradientWrtLogits;
 

@@ -90,55 +90,6 @@ namespace UpdatedProject
             }
         }
 
-            for (int i = 0; i < numColumns; i++)
-            {
-                var fieldName = $"layer_{i + 1}";
-                var metadata = new Dictionary<string, string>
-                {
-                    { "description", $"Description for {fieldName}" },
-                    { "customMetadata", "Any custom metadata here" }
-                 // Add more metadata as needed
-                };
-
-                var field = new Field(fieldName, new ListType(FloatType.Default), false, metadata);
-                fields.Add(field);
-            }
-
-            return new Schema(fields);
-        }
-
-        static Table CreateArrowTable(Schema schema, List<Vector<double>> data)
-        {
-            // Create Arrow table with the specified schema and data
-            var recordBatches = new List<RecordBatch>();
-
-            for (int i = 0; i < data.Count; i++)
-            {
-                var vectors = data[i];
-                var recordBatchBuilder = new RecordBatchBuilder(schema);
-
-                for (int j = 0; j < schema.Fields.Count; j++)
-                {
-                    recordBatchBuilder.GetFieldBuilder<ListBuilder<double>>(j).Append(vectors[j]);
-                }
-
-                var recordBatch = recordBatchBuilder.Build();
-                recordBatches.Add(recordBatch);
-            }
-
-            return new Table(schema, recordBatches);
-        }
-
-        static void WriteToParquet(Table table, string outputPath)
-        {
-            // Write Arrow table to Parquet file
-            using (var fileWriter = new ParquetFileWriter(outputPath, table.Schema))
-            {
-                fileWriter.WriteTable(table);
-            }
-        }
-
-
 
         static public int GetFileDimentions(int Pass)
         {
