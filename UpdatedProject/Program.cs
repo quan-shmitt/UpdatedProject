@@ -46,7 +46,7 @@ namespace UpdatedProject
             {
                 Console.WriteLine("enter max image count");
 
-                int Passes = 100;
+                int Passes = 75;
                 int epochs = 4;
 
                 pass(Passes, epochs);
