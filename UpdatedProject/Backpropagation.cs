@@ -1,4 +1,5 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Complex;
 using System;
 using System.Collections.Generic;
 using System.Configuration.Assemblies;
@@ -37,11 +38,9 @@ namespace UpdatedProject
             Program.cost += CalculateSparseCategoricalCrossEntropy(LayerVectors[layer], Convert.ToInt32(Target.MaximumIndex()));
 
 
-            Vector<double> gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(LayerVectors[layer] - Target) * (Target.MaximumIndex() == LayerVectors[layer].MaximumIndex() ? 1.0 : 0.0); ;
+            Vector<double> gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(LayerVectors[layer] - Target) * SoftmaxDerivativeMatrix(LayerVectors[layer]);
 
-
-
-            Vector<double> gradientWrtLogits = LayerVectors[layer] - Target;
+            Vector<double> gradientWrtLogits = SoftmaxDerivativeMatrix(LayerVectors[layer]) * (LayerVectors[layer] - Target);
 
          //   Vector<double> gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(ReLU_Derivative(Softmax(LayerVectors[layer])));
 
@@ -68,6 +67,8 @@ namespace UpdatedProject
 
             while (layer > 0)
             {
+                gradientWrtWeights = 
+
 
                 gradientWrtWeights = (Softmax(LayerVectors[layer])).PointwiseMultiply(LayerVectors[layer]).Multiply(Target.MaximumIndex() == LayerVectors[layer].MaximumIndex() ? 1.0 : 0.0);
 
@@ -145,6 +146,19 @@ namespace UpdatedProject
             Vector<double> probabilities = expLogits.Divide(sumExp);
 
             return probabilities;
+        }
+        static Matrix<double> SoftmaxDerivativeMatrix(Vector<double> softmax)
+        {
+            int K = softmax.Count;
+            Matrix<double> result = Matrix<double>.Build.Dense(K, K, (i, j) =>
+            {
+                if (i == j)
+                    return softmax[i] * (1 - softmax[i]);
+                else
+                    return -softmax[i] * softmax[j];
+            });
+
+            return result;
         }
 
     }

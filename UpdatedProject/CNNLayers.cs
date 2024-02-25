@@ -12,7 +12,6 @@ namespace UpdatedProject
 
         public Matrix<double> CNNOutput()
         {
-
             return null;
         }
 
