@@ -21,7 +21,7 @@ namespace UpdatedProject
         public MLP(int Pass, int layer)
         {
             LayerMatrix = CNNLayers.CNNOutput();
-            LayerVector = MatrixToVector(LayerMatrix);
+            LayerVector = MatrixToVector(ManageData.LayerVectorGen(Pass));
             Cache.Add(LayerVector);
         }
 
