@@ -42,8 +42,6 @@ namespace UpdatedProject
 
             Vector<double> gradientWrtLogits = SoftmaxDerivativeMatrix(LayerVectors[layer]) * (LayerVectors[layer] - Target);
 
-         //   Vector<double> gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(ReLU_Derivative(Softmax(LayerVectors[layer])));
-
             Vector<double> gradientWrtBiases = gradientWrtLogits;
 
             
@@ -67,13 +65,9 @@ namespace UpdatedProject
 
             while (layer > 0)
             {
-                gradientWrtWeights = 
+                gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(LayerVectors[layer] - Target) * SoftmaxDerivativeMatrix(LayerVectors[layer]);
 
-
-                gradientWrtWeights = (Softmax(LayerVectors[layer])).PointwiseMultiply(LayerVectors[layer]).Multiply(Target.MaximumIndex() == LayerVectors[layer].MaximumIndex() ? 1.0 : 0.0);
-
-                gradientWrtBiases = (Softmax(LayerVectors[(layer)])) * (Target.MaximumIndex() == LayerVectors[layer].MaximumIndex() ? 1.0 : 0.0);
-
+                gradientWrtBiases = SoftmaxDerivativeMatrix(LayerVectors[layer]) * (LayerVectors[layer] - Target);
 
                 for (int i = 0; i < Weights[layer - 1].RowCount; i++)
                 {
