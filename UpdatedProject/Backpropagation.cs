@@ -65,9 +65,11 @@ namespace UpdatedProject
 
             while (layer > 0)
             {
-                gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(LayerVectors[layer] - Target) * SoftmaxDerivativeMatrix(LayerVectors[layer]);
+                LayerVectors[layer].PointwiseMultiply(LayerVectors[LayerVectors.Count] - Target);
 
-                gradientWrtBiases = SoftmaxDerivativeMatrix(LayerVectors[layer]) * (LayerVectors[layer] - Target);
+                gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(LayerVectors[LayerVectors.Count] - Target) * SoftmaxDerivativeMatrix(LayerVectors[layer]);
+
+                gradientWrtBiases = SoftmaxDerivativeMatrix(LayerVectors[layer]) * (LayerVectors[LayerVectors.Count] - Target);
 
                 for (int i = 0; i < Weights[layer - 1].RowCount; i++)
                 {
