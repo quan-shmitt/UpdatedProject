@@ -35,6 +35,7 @@ namespace UpdatedProject
         {
             LayerVectors[layer] = Softmax(LayerVectors[layer]);
 
+
             Program.cost += CalculateSparseCategoricalCrossEntropy(LayerVectors[layer], Convert.ToInt32(Target.MaximumIndex()));
 
 
