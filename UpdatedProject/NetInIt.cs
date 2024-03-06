@@ -1,7 +1,9 @@
 ﻿using HDF.PInvoke;
+using MathNet.Numerics.Integration;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.IO;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 
 namespace UpdatedProject
@@ -18,12 +20,15 @@ namespace UpdatedProject
         public Vector<double> BiasVector;
 
 
-        public NetInIt(int Pass, int layerCount, int MaxImageCount)
+        public NetInIt(int Pass, int layerCount, int CNNCount)
         {
 
             //CreateParentDataset(Convert.ToUInt32(MaxImageCount));
+            int[] dim = new int[] { 3, 3, };
 
-            fileGen(layerCount);
+            CNNLayerGen(2, dim);
+
+            fileGen(layerCount, CNNCount);
 
             LayerGen(Pass, layerCount - 1);
 
@@ -117,11 +122,29 @@ namespace UpdatedProject
             return vals.ColumnCount * vals.RowCount;
         }
 
-        void fileGen(int layer)
+        void fileGen(int layer, int CNNlayer)
+        {
+            MLPGen(layer);
+            CNNGen(CNNlayer);
+        }
+
+        public void MLPGen(int layer)
         {
             for (int i = 0; i < layer; i++)
             {
                 string filename = $"Data\\Layer {i}";
+                if (!File.Exists(filename))
+                {
+                    Directory.CreateDirectory(filename);
+                }
+            }
+        }
+
+        public void CNNGen(int CNNLayer)
+        {
+            for (int i = 0; i < CNNLayer; i++)
+            {
+                string filename = $"Data\\CNNLayer {i}";
                 if (!File.Exists(filename))
                 {
                     Directory.CreateDirectory(filename);
@@ -136,6 +159,27 @@ namespace UpdatedProject
                 WeightGen(i);
                 BiasGen(i);
             }
+        }
+
+        void CNNLayerGen(int CNNCount, int[] dimentions)
+        {
+            GaussianRandomGenerator gaussianRandomGenerator = new GaussianRandomGenerator();
+
+            for(int i = 0; i < CNNCount; i++)
+            {
+                Matrix<double> matrix = Matrix<double>.Build.Dense(dimentions[0], dimentions[1], (placeholder, placeholder2) =>
+                {
+                    return gaussianRandomGenerator.Generate(0, 1);
+                });
+                Console.WriteLine(matrix.ToString());
+
+            }
+        }
+
+
+        public void KernelGen()
+        {
+
         }
 
 

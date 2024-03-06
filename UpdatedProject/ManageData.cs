@@ -379,6 +379,11 @@ namespace UpdatedProject
 
         }
 
+       List<Matrix<double>> getKernel()
+       {
+           string Directory = $"";
+       }
+
 
 
     }

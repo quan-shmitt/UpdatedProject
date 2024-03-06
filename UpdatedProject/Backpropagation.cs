@@ -29,7 +29,7 @@ namespace UpdatedProject
             {
                 Bias.Add(getData.getBias(i));
             }
-        }
+        } 
 
         public void BackProp(List<Vector<double>> LayerVectors ,Vector<double> Target, double LearningRate, int layer)
         {
@@ -44,6 +44,8 @@ namespace UpdatedProject
             Vector<double> gradientWrtLogits = SoftmaxDerivativeMatrix(LayerVectors[layer]) * (LayerVectors[layer] - Target);
 
             Vector<double> gradientWrtBiases = gradientWrtLogits;
+
+            
 
             
 

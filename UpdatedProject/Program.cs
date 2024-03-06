@@ -1,22 +1,17 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using System.Threading;
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Complex;
+using System.Threading.Tasks;
 
 namespace UpdatedProject
 {
     internal class Program
     {
-        const int Xweight = 784;
-        const int Yweight = 16;
 
         static int LayerCount = 2;
+        static int CNNCount = 2;
 
 
 
@@ -37,7 +32,7 @@ namespace UpdatedProject
 
             Console.WriteLine("Test or Train: \n");
             string ProcessDirector = Console.ReadLine();
-            if(ProcessDirector.ToUpper() == "TEST")
+            if (ProcessDirector.ToUpper() == "TEST")
             {
                 PredictInput predictInput = new PredictInput();
                 predictInput.FindNumInPicture(LayerCount);
@@ -62,7 +57,7 @@ namespace UpdatedProject
             ManageData manageData = new ManageData();
 
 
-            ImageHandle image = new ImageHandle();  
+            ImageHandle image = new ImageHandle();
 
             Console.WriteLine("Processing...");
             NetInIt networkGen = new NetInIt(Passes, LayerCount, Passes);
