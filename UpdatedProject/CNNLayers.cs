@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,8 +11,16 @@ namespace UpdatedProject
 {
     internal class CNNLayers
     {
-        //public List<Matrix<double>> Kernel = ;
+        ManageData manageData = new ManageData();
 
+        public List<Matrix<double>> Kernel;
+
+        public Matrix<double> result;
+
+        public CNNLayers()
+        {
+            Kernel = manageData.getKernel();
+        }
 
         public Matrix<double> CNNOutput()
         {
@@ -19,46 +28,61 @@ namespace UpdatedProject
         }
 
 
-        Bitmap ApplySobelFilterWithThreshold(Bitmap inputImage, int threshold)
+        public void Forwards(int Pass, int Layer, int threashold)
         {
-            // Define Sobel filter kernels for horizontal and vertical directions
-            Matrix<int> horizontalKernel = Matrix<int>.Build.DenseOfArray(new int[,] { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } });
-            Matrix<int> verticalKernel = Matrix<int>.Build.DenseOfArray(new int[,] { { -1, -2, -1 }, { 0, 0, 0 }, { 1, 2, 1 } });
+            Matrix<double> LayerMatrix = manageData.LayerVectorGen(Pass);
+            result = LayerMatrix;
 
+            Layer--;
+
+
+            for (int i = 0; i < 2; i++)
+            {
+                result = ResizeImage(result, 2);
+
+                result = ApplyConvolutionFilter(result, threashold, Layer);
+
+                result = ApplyMaxPooling(result, 2);
+            }
+
+            if(Layer != 0)
+            {
+                Forwards(Pass, Layer, threashold);
+            }
+        }
+
+        Matrix<double> ApplyConvolutionFilter(Matrix<double> inputImage, int threshold, int layer)
+        {
             // Apply convolution with Sobel kernels
-            Bitmap result = ConvolutionFilter(inputImage, horizontalKernel);
-            result = ConvolutionFilter(result, verticalKernel);
-
+            Matrix<double> result = ConvolutionFilter(inputImage, Kernel[layer]);
+         
             // Apply threshold to the magnitude of gradients
             result = ApplyThreshold(result, threshold);
 
             return result;
         }
 
-        Bitmap ApplyThreshold(Bitmap inputImage, int threshold)
+        public Matrix<double> ApplyThreshold(Matrix<double> inputMatrix, int threshold)
         {
-            int width = inputImage.Width;
-            int height = inputImage.Height;
+            int width = inputMatrix.ColumnCount;
+            int height = inputMatrix.RowCount;
 
-            Bitmap result = new Bitmap(width, height);
+            Matrix<double> result = Matrix<double>.Build.Dense(width, height);
 
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    Color pixel = inputImage.GetPixel(x, y);
-
-                    // Calculate the magnitude of the gradient
-                    int magnitude = (int)Math.Sqrt(pixel.R * pixel.R + pixel.G * pixel.G + pixel.B * pixel.B);
+                    double magnitude = inputMatrix[y, x];
 
                     // Apply threshold
                     if (magnitude < threshold)
                     {
-                        result.SetPixel(x, y, Color.Black);
+                        result[y, x] = 0.0; // Assuming black in a grayscale image
                     }
                     else
                     {
-                        result.SetPixel(x, y, Color.White); // You can adjust this color if needed
+                        result[y, x] = 255.0; // Assuming white in a grayscale image
                     }
                 }
             }
@@ -66,99 +90,135 @@ namespace UpdatedProject
             return result;
         }
 
-        Bitmap ConvolutionFilter(Bitmap inputImage, Matrix<int> kernel)
+        static Matrix<double> ConvolutionFilter(Matrix<double> inputMatrix, Matrix<double> kernel)
         {
-            int width = inputImage.Width;
-            int height = inputImage.Height;
+            int width = inputMatrix.ColumnCount;
+            int height = inputMatrix.RowCount;
 
-            Bitmap result = new Bitmap(width, height);
+            Matrix<double> result = Matrix<double>.Build.Dense(width, height);
 
             int kernelSize = kernel.RowCount; // Assuming square kernel
             int offset = kernelSize / 2;
-
-            Matrix<int> grayImage = Matrix<int>.Build.DenseOfArray(new int[width, height]);
-
-            // Convert input image to grayscale and store it in grayImage matrix
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 0; x < width; x++)
-                {
-                    Color pixel = inputImage.GetPixel(x, y);
-                    int grayValue = (int)(pixel.R * 0.3 + pixel.G * 0.59 + pixel.B * 0.11);
-                    grayImage[x, y] = grayValue;
-                }
-            }
 
             // Apply convolution operation
             for (int y = offset; y < height - offset; y++)
             {
                 for (int x = offset; x < width - offset; x++)
                 {
-                    int newColorX = 0;
-                    int newColorY = 0;
+                    double newColorX = 0;
+                    double newColorY = 0;
 
                     for (int ky = -offset; ky <= offset; ky++)
                     {
                         for (int kx = -offset; kx <= offset; kx++)
                         {
-                            newColorX += grayImage[x + kx, y + ky] * kernel[kx + offset, ky + offset];
-                            newColorY += grayImage[x + kx, y + ky] * kernel[ky + offset, kx + offset];
+                            newColorX += inputMatrix[y + ky, x + kx] * kernel[kx + offset, ky + offset];
+                            newColorY += inputMatrix[y + ky, x + kx] * kernel[ky + offset, kx + offset];
                         }
                     }
 
                     int magnitude = (int)Math.Sqrt(newColorX * newColorX + newColorY * newColorY);
                     magnitude = Math.Max(0, Math.Min(255, magnitude));
 
-                    // Set the new pixel value in the result image
-                    result.SetPixel(x, y, Color.FromArgb(magnitude, magnitude, magnitude));
+                    // Set the new pixel value in the result matrix
+                    result[y, x] = magnitude;
                 }
             }
 
             return result;
         }
 
-        Bitmap ResizeImage(Bitmap originalImage, int scaleFactor)
+        Matrix<double> ApplyMaxPooling(Matrix<double> inputMatrix, int poolSize)
         {
-            int newWidth = originalImage.Width * scaleFactor;
-            int newHeight = originalImage.Height * scaleFactor;
+            int width = inputMatrix.ColumnCount;
+            int height = inputMatrix.RowCount;
 
-            Bitmap resizedImage = new Bitmap(newWidth, newHeight);
+            // Calculate the new dimensions after max pooling
+            int newWidth = width / poolSize;
+            int newHeight = height / poolSize;
 
-            for (int x = 0; x < newWidth; x++)
+            Matrix<double> result = Matrix<double>.Build.Dense(newHeight, newWidth);
+
+            for (int y = 0; y < newHeight; y++)
             {
-                for (int y = 0; y < newHeight; y++)
+                for (int x = 0; x < newWidth; x++)
+                {
+                    int startX = x * poolSize;
+                    int startY = y * poolSize;
+
+                    // Find the maximum value in the pooling window
+                    double maxVal = GetMaxValueInWindow(inputMatrix, startX, startY, poolSize);
+
+                    // Set the maximum value in the result matrix
+                    result[y, x] = maxVal;
+                }
+            }
+
+            return result;
+        }
+
+        double GetMaxValueInWindow(Matrix<double> matrix, int startX, int startY, int poolSize)
+        {
+            double maxVal = double.MinValue;
+
+            for (int i = 0; i < poolSize; i++)
+            {
+                for (int j = 0; j < poolSize; j++)
+                {
+                    double currentValue = matrix[startY + i, startX + j];
+                    maxVal = Math.Max(maxVal, currentValue);
+                }
+            }
+
+            return maxVal;
+        }
+
+        Matrix<double> ResizeImage(Matrix<double> originalMatrix, int scaleFactor)
+        {
+            int originalWidth = originalMatrix.ColumnCount;
+            int originalHeight = originalMatrix.RowCount;
+
+            int newWidth = originalWidth * scaleFactor;
+            int newHeight = originalHeight * scaleFactor;
+
+            Matrix<double> resizedMatrix = Matrix<double>.Build.Dense(newHeight, newWidth);
+
+            for (int y = 0; y < newHeight - 1; y++)
+            {
+                for (int x = 0; x < newWidth - 1; x++)
                 {
                     float originalX = x / (float)scaleFactor;
                     float originalY = y / (float)scaleFactor;
 
-                    Color interpolatedColor = BilinearInterpolation(originalImage, originalX, originalY);
-                    resizedImage.SetPixel(x, y, interpolatedColor);
+                    double interpolatedValue = BilinearInterpolation(originalMatrix, originalX, originalY);
+                    resizedMatrix[y, x] = interpolatedValue;
                 }
             }
 
-            return resizedImage;
+            return resizedMatrix;
         }
 
-        Color BilinearInterpolation(Bitmap image, float x, float y)
+        double BilinearInterpolation(Matrix<double> matrix, float x, float y)
         {
-            int x1 = (int)x;
-            int y1 = (int)y;
-            int x2 = Math.Min(x1 + 1, image.Width - 1);
-            int y2 = Math.Min(y1 + 1, image.Height - 1);
+            int xFloor = (int)Math.Floor(x);
+            int yFloor = (int)Math.Floor(y);
+            int xCeiling = (int)Math.Ceiling(x);
+            int yCeiling = (int)Math.Ceiling(y);
 
-            Color q11 = image.GetPixel(x1, y1);
-            Color q21 = image.GetPixel(x2, y1);
-            Color q12 = image.GetPixel(x1, y2);
-            Color q22 = image.GetPixel(x2, y2);
+            double q11 = matrix[yFloor, xFloor];
+            double q12 = matrix[yCeiling, xFloor];
+            double q21 = matrix[yFloor, xCeiling];
+            double q22 = matrix[yCeiling, xCeiling];
 
-            float dx = x - x1;
-            float dy = y - y1;
+            double xLerp = x - xFloor;
+            double yLerp = y - yFloor;
 
-            int red = (int)(q11.R * (1 - dx) * (1 - dy) + q21.R * dx * (1 - dy) + q12.R * (1 - dx) * dy + q22.R * dx * dy);
-            int green = (int)(q11.G * (1 - dx) * (1 - dy) + q21.G * dx * (1 - dy) + q12.G * (1 - dx) * dy + q22.G * dx * dy);
-            int blue = (int)(q11.B * (1 - dx) * (1 - dy) + q21.B * dx * (1 - dy) + q12.B * (1 - dx) * dy + q22.B * dx * dy);
+            double topInterpolation = q11 * (1 - xLerp) + q21 * xLerp;
+            double bottomInterpolation = q12 * (1 - xLerp) + q22 * xLerp;
 
-            return Color.FromArgb(red, green, blue);
+            double finalInterpolation = topInterpolation * (1 - yLerp) + bottomInterpolation * yLerp;
+
+            return finalInterpolation;
         }
 
 
@@ -182,25 +242,6 @@ namespace UpdatedProject
             return Vector<double>.Build.DenseOfArray(matrix.ToColumnMajorArray());
         }
 
-        public static Matrix<double> SobelXFilter()
-        {
-            return Matrix<double>.Build.DenseOfArray(new double[,]
-            {
-            { -1, 0, 1 },
-            { -2, 0, 2 },
-            { -1, 0, 1 }
-            });
-        }
-
-        public static Matrix<double> SobelYFilter()
-        {
-            return Matrix<double>.Build.DenseOfArray(new double[,]
-            {
-            { -1, -2, -1 },
-            {  0,  0,  0 },
-            {  1,  2,  1 }
-            });
-        }
         public static Vector<double> ReLU(Vector<double> x)
         {
             for (int i = 0; i < x.Count(); i++)
