@@ -24,11 +24,9 @@ namespace UpdatedProject
         {
 
             //CreateParentDataset(Convert.ToUInt32(MaxImageCount));
-            int[] dim = new int[] { 3, 3, };
+            int[] dim = new int[] {3,3};
 
-            CNNLayerGen(2, dim);
-
-            fileGen(layerCount, CNNCount);
+            fileGen(layerCount, CNNCount, dim);
 
             LayerGen(Pass, layerCount - 1);
 
@@ -122,10 +120,10 @@ namespace UpdatedProject
             return vals.ColumnCount * vals.RowCount;
         }
 
-        void fileGen(int layer, int CNNlayer)
+        void fileGen(int layer, int CNNlayer, int[] dim)
         {
             MLPGen(layer);
-            CNNGen(CNNlayer);
+            CNNGen(CNNlayer, dim);
         }
 
         public void MLPGen(int layer)
@@ -139,19 +137,6 @@ namespace UpdatedProject
                 }
             }
         }
-
-        public void CNNGen(int CNNLayer)
-        {
-            for (int i = 0; i < CNNLayer; i++)
-            {
-                string filename = $"Data\\CNNLayer {i}";
-                if (!File.Exists(filename))
-                {
-                    Directory.CreateDirectory(filename);
-                }
-            }
-        }
-
         void LayerGen(int Pass, int layer)
         {
             for (int i = 0; i <= layer; i++)
@@ -161,26 +146,41 @@ namespace UpdatedProject
             }
         }
 
-        void CNNLayerGen(int CNNCount, int[] dimentions)
+
+        public void CNNGen(int CNNLayer, int[] dim)
         {
             GaussianRandomGenerator gaussianRandomGenerator = new GaussianRandomGenerator();
 
-            for(int i = 0; i < CNNCount; i++)
-            {
-                Matrix<double> matrix = Matrix<double>.Build.Dense(dimentions[0], dimentions[1], (placeholder, placeholder2) =>
-                {
-                    return gaussianRandomGenerator.Generate(0, 1);
-                });
-                Console.WriteLine(matrix.ToString());
+            string DirectoryName = $"Data\\CNNLayer";
 
+            if(!Directory.Exists(DirectoryName))
+            {
+                Directory.CreateDirectory(DirectoryName);
+            }
+
+            for (int i = 0; i < CNNLayer; i++)
+            {
+                string filename = $"Data\\CNNLayer\\Kernel {i}.txt";
+                if (!File.Exists(filename))
+                {
+                    File.WriteAllText(filename, string.Join(",", CNNLayerGen(dim, gaussianRandomGenerator)));
+                }
             }
         }
 
+         double[] CNNLayerGen(int[] dimentions, GaussianRandomGenerator gaussianRandomGenerator)
+         {
+            double[] vals = new double[dimentions[0] * dimentions[1]];
 
-        public void KernelGen()
-        {
+            for (int i = 0;i < dimentions[0] * dimentions[1]; i++)
+            {
+                vals[i] = gaussianRandomGenerator.Generate(0, 1);
+            }
 
-        }
+            return vals;
+            
+         }
+
 
 
 

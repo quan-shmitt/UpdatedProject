@@ -67,9 +67,11 @@ namespace UpdatedProject
                 Parallel.For(0, Passes + 1, i =>
                 {
                     MLP forwardPass = new MLP(i, LayerCount);
+                    CNNLayers CNN = new CNNLayers();
                     if (!File.Exists($"Data\\Pass {i}\\Output\\LayerVector.txt"))
                     {
-                        forwardPass.Forwards(forwardPass.LayerVector, 0, LayerCount);
+                        CNN.Forwards(i, LayerCount, 200);
+                        forwardPass.Forwards(CNN.MatrixToVector(CNN.result), 0, LayerCount);
                     }
                     Backpropagation backpropagation = new Backpropagation(LayerCount);
 

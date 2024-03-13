@@ -379,10 +379,32 @@ namespace UpdatedProject
 
         }
 
-       List<Matrix<double>> getKernel()
-       {
-           string Directory = $"";
-       }
+        public List<Matrix<double>> getKernel()
+        {
+            List<Matrix<double>> Data = new List<Matrix<double>>();
+
+            string directory = $"Data\\CNNLayer";
+
+            foreach(string file in Directory.GetFiles(directory))
+            {
+                string content = File.ReadAllText(file);
+                string[] vals = content.Split(',');
+
+                double[,] doubleArray = new double[(int)Math.Sqrt(vals.Length),(int)Math.Sqrt(vals.Length)];
+                int k = 0;
+                for(int i = 0; i < Math.Sqrt(vals.Length); i++)
+                {
+                    for(int j = 0; j < Math.Sqrt(vals.Length); j++)
+                    {
+                        doubleArray[i, j] = Convert.ToDouble(vals[k]);
+                        k++;
+                    }
+                }
+
+                Data.Add(Matrix<double>.Build.DenseOfArray(doubleArray));
+            }
+            return Data;
+        }
 
 
 
