@@ -60,7 +60,7 @@ namespace UpdatedProject
             ImageHandle image = new ImageHandle();
 
             Console.WriteLine("Processing...");
-            NetInIt networkGen = new NetInIt(Passes, LayerCount, Passes);
+            NetInIt networkGen = new NetInIt(Passes, LayerCount, CNNCount);
 
             for (int j = 0; j < epoch; j++)
             {
