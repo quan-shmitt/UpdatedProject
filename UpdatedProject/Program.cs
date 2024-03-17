@@ -23,6 +23,8 @@ namespace UpdatedProject
 
         static void Main(string[] args)
         {
+            TOMLHandle.GetToml("Data\\Configs\\config.toml");
+
             ManageData manageData = new ManageData();
 
             Stopwatch sw = new Stopwatch();

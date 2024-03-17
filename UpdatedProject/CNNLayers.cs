@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,6 +19,19 @@ namespace UpdatedProject
 
         public Matrix<double> result;
 
+        public string[] algorithms = TOMLHandle.GetCNNStruct();
+
+        int threshold = 350;
+        int scaleFactor = TOMLHandle.GetScaleFactor();
+        int poolSize = TOMLHandle.GetPoolSize();
+
+
+        public void ChangeScaleFactor(int i)
+        {
+            scaleFactor = i;
+        }
+
+
         public CNNLayers()
         {
             Kernel = manageData.getKernel();
@@ -28,22 +43,72 @@ namespace UpdatedProject
         }
 
 
+        Dictionary<string, Action> algorithmFunctions = new Dictionary<string, Action>
+        {
+            {"ResizeImage",  },
+            {"ApplyConvolutionFilter", typeof(CNNLayers).GetMethod("ApplyConvolutionFilter") },
+            {"ApplyMaxPooling", typeof(CNNLayers).GetMethod("ApplyMaxPooling")},
+            {"BilinearInterpolation", typeof(CNNLayers).GetMethod("BilinearInterpolation")}
+        };
+
+        static object GetParameterValue(Type parameterType, int layer, Matrix<double> Result)
+        {
+
+            
+            // Define your logic to generate parameter values dynamically based on parameterType
+            // Here we're just providing some hardcoded values for demonstration purposes
+            if (parameterType == typeof(int))
+            {
+                return layer;
+            }
+            else if (parameterType == typeof(Matrix<double>))
+            {
+                return Result;
+            }
+            else
+            {
+                // Handle other parameter types as needed
+                throw new ArgumentException("Unsupported parameter type");
+            }
+        }
+
+
         public void Forwards(int Pass, int Layer, int threashold)
         {
             Matrix<double> LayerMatrix = manageData.LayerVectorGen(Pass);
             result = LayerMatrix;
 
-            Layer--;
+            
 
-
-            for (int i = 0; i < 2; i++)
+            MethodInfo resizeImageMethod = algorithmFunctions["ResizeImage"];
+            // Assuming you have parameters for the method, you need to provide them when invoking
+            if (resizeImageMethod != null)
             {
-                result = ResizeImage(result, 2);
-
-                result = ApplyConvolutionFilter(result, threashold, Layer);
-
-                result = ApplyMaxPooling(result, 2);
+                // For demonstration purposes, pass null for parameters array
+                resizeImageMethod.Invoke(null, null);
             }
+            else
+            {
+                Console.WriteLine("ResizeImage method not found.");
+            }
+            foreach (string algorithm in algorithms)
+            {
+                if (algorithmFunctions.ContainsKey(algorithm))
+                {
+                    ParameterInfo[] parametersInfo = algorithmFunctions[algorithm].GetParameters();
+
+                    // Create an array to hold the parameters
+                    object[] parameters = new object[parametersInfo.Length];
+                    for (int i = 0; i < parametersInfo.Length; i++)
+                    {
+                        // Dynamically generate parameter values based on parameter type
+                        parameters[i] = GetParameterValue(parametersInfo[i].ParameterType, Layer, result);
+                    }
+
+                    algorithmFunctions[algorithm].Invoke(result, parameters);
+                }
+            }
+            Layer--;
 
             if(Layer != 0)
             {
@@ -51,7 +116,7 @@ namespace UpdatedProject
             }
         }
 
-        Matrix<double> ApplyConvolutionFilter(Matrix<double> inputImage, int threshold, int layer)
+        public Matrix<double> ApplyConvolutionFilter(Matrix<double> inputImage, int layer)
         {
             // Apply convolution with Sobel kernels
             Matrix<double> result = ConvolutionFilter(inputImage, Kernel[layer]);
@@ -90,7 +155,7 @@ namespace UpdatedProject
             return result;
         }
 
-        static Matrix<double> ConvolutionFilter(Matrix<double> inputMatrix, Matrix<double> kernel)
+        public Matrix<double> ConvolutionFilter(Matrix<double> inputMatrix, Matrix<double> kernel)
         {
             int width = inputMatrix.ColumnCount;
             int height = inputMatrix.RowCount;
@@ -128,7 +193,7 @@ namespace UpdatedProject
             return result;
         }
 
-        Matrix<double> ApplyMaxPooling(Matrix<double> inputMatrix, int poolSize)
+        public Matrix<double> ApplyMaxPooling(Matrix<double> inputMatrix)
         {
             int width = inputMatrix.ColumnCount;
             int height = inputMatrix.RowCount;
@@ -157,7 +222,7 @@ namespace UpdatedProject
             return result;
         }
 
-        double GetMaxValueInWindow(Matrix<double> matrix, int startX, int startY, int poolSize)
+        public double GetMaxValueInWindow(Matrix<double> matrix, int startX, int startY, int poolSize)
         {
             double maxVal = double.MinValue;
 
@@ -173,7 +238,7 @@ namespace UpdatedProject
             return maxVal;
         }
 
-        Matrix<double> ResizeImage(Matrix<double> originalMatrix, int scaleFactor)
+        public Matrix<double> ResizeImage(Matrix<double> originalMatrix)
         {
             int originalWidth = originalMatrix.ColumnCount;
             int originalHeight = originalMatrix.RowCount;
@@ -198,7 +263,7 @@ namespace UpdatedProject
             return resizedMatrix;
         }
 
-        double BilinearInterpolation(Matrix<double> matrix, float x, float y)
+        public double BilinearInterpolation(Matrix<double> matrix, float x, float y)
         {
             int xFloor = (int)Math.Floor(x);
             int yFloor = (int)Math.Floor(y);

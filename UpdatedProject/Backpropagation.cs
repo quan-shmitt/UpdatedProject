@@ -68,7 +68,7 @@ namespace UpdatedProject
 
             while (layer > 0)
             {
-                LayerVectors[layer].PointwiseMultiply(LayerVectors[LayerVectors.Count] - Target);
+                LayerVectors[layer].PointwiseMultiply(LayerVectors[layer] - Target);
 
                 gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(LayerVectors[LayerVectors.Count] - Target) * SoftmaxDerivativeMatrix(LayerVectors[layer]);
 
