@@ -13,6 +13,7 @@ using System.Drawing.Text;
 using System.Diagnostics.Eventing.Reader;
 using System.Runtime.InteropServices.ComTypes;
 using System.Drawing;
+using Nett;
 
 namespace UpdatedProject
 {
@@ -20,6 +21,7 @@ namespace UpdatedProject
     internal class ManageData
     {
         NetInIt netinit = new NetInIt();
+
 
         public Matrix<double> weights;
         public Vector<double> BiasVector;
@@ -405,8 +407,5 @@ namespace UpdatedProject
             }
             return Data;
         }
-
-
-
     }
 }
