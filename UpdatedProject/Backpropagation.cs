@@ -68,11 +68,9 @@ namespace UpdatedProject
 
             while (layer > 0)
             {
-                LayerVectors[layer].PointwiseMultiply(LayerVectors[layer] - Target);
+                gradientWrtWeights = ReLU_Derivative(LayerVectors[layer]).PointwiseMultiply(LayerVectors[layer]);
 
-                gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(LayerVectors[LayerVectors.Count] - Target) * SoftmaxDerivativeMatrix(LayerVectors[layer]);
-
-                gradientWrtBiases = SoftmaxDerivativeMatrix(LayerVectors[layer]) * (LayerVectors[LayerVectors.Count] - Target);
+                gradientWrtBiases = ReLU_Derivative(LayerVectors[layer]);
 
                 for (int i = 0; i < Weights[layer - 1].RowCount; i++)
                 {
@@ -129,7 +127,7 @@ namespace UpdatedProject
         // Derivative of ReLU activation function
         Vector<double> ReLU_Derivative(Vector<double> x)
         {
-            return x.PointwiseSign();
+            return x.PointwiseMaximum(0).PointwiseSign(); ;
         }
 
         static Vector<double> Softmax(Vector<double> logits)

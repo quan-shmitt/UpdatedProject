@@ -37,14 +37,14 @@ namespace UpdatedProject
             if (ProcessDirector.ToUpper() == "TEST")
             {
                 PredictInput predictInput = new PredictInput();
-                predictInput.FindNumInPicture(LayerCount);
+                predictInput.FindNumInPicture(LayerCount, 200);
             }
             else
             {
                 Console.WriteLine("enter max image count");
 
                 int Passes = 75;
-                int epochs = 4;
+                int epochs = 8;
 
                 Pass(Passes, epochs);
             }
@@ -68,11 +68,15 @@ namespace UpdatedProject
             {
                 Parallel.For(0, Passes + 1, i =>
                 {
-                    MLP forwardPass = new MLP(i, LayerCount);
-                    CNNLayers CNN = new CNNLayers();
+                    MLP forwardPass = new MLP();
+
+                    Matrix<double> input = manageData.LayerVectorGen(i);
+                    CNNLayers CNN = new CNNLayers(input);
+
+
                     if (!File.Exists($"Data\\Pass {i}\\Output\\LayerVector.txt"))
                     {
-                        CNN.Forwards(i, LayerCount, 200);
+                        CNN.Forwards(0 ,LayerCount, 200);
                         forwardPass.Forwards(CNN.MatrixToVector(CNN.result), 0, LayerCount);
                     }
                     Backpropagation backpropagation = new Backpropagation(LayerCount);

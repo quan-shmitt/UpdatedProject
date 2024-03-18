@@ -12,18 +12,9 @@ namespace UpdatedProject
     internal class MLP
     {
         public Matrix<double> LayerMatrix;
-        public Vector<double> LayerVector;
         public List<Vector<double>> Cache = new List<Vector<double>>(); 
 
         ManageData ManageData = new ManageData();
-        CNNLayers CNNLayers = new CNNLayers();
-
-        public MLP(int Pass, int layer)
-        {
-            LayerMatrix = CNNLayers.CNNOutput();
-            LayerVector = MatrixToVector(ManageData.LayerVectorGen(Pass));
-            Cache.Add(LayerVector);
-        }
 
         public MLP()
         {
@@ -32,7 +23,7 @@ namespace UpdatedProject
 
         public void Forwards(Vector<double> LayerVector, int Layer, int LayerCount)
         {
-            
+            Cache.Add(LayerVector);
 
             Matrix<double> weights = ManageData.GetWeight(Layer);
             Vector<double> Bias = ManageData.getBias(Layer);
