@@ -23,8 +23,6 @@ namespace UpdatedProject
 
         static void Main(string[] args)
         {
-            ManageData manageData = new ManageData();
-
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
@@ -44,7 +42,7 @@ namespace UpdatedProject
                 int Passes = 75;
                 int epochs = 4;
 
-                pass(Passes, epochs);
+                Pass(Passes, epochs);
             }
 
             Console.WriteLine(sw.Elapsed.ToString());
@@ -52,7 +50,7 @@ namespace UpdatedProject
 
 
 
-        static void pass(int Passes, int epoch)
+        static void Pass(int Passes, int epoch)
         {
             ManageData manageData = new ManageData();
 

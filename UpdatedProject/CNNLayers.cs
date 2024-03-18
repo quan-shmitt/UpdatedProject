@@ -11,7 +11,7 @@ namespace UpdatedProject
 {
     internal class CNNLayers
     {
-        ManageData manageData = new ManageData();
+        readonly ManageData manageData = new ManageData();
 
         public List<Matrix<double>> Kernel;
 
