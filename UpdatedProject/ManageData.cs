@@ -327,46 +327,11 @@ namespace UpdatedProject
 
                 }
         */
-
-        public int GetDimentions(int layer)
-        {
-
-            string filePath = "Dimentions.txt";
-            string[] Data = File.ReadAllLines(filePath);
-
-
-            string pattern = $"layer{layer}Dimention\\s*=\\s*(\\d+)";
-            Regex regex = new Regex(pattern);
-
-
-            Match match = regex.Match(Data[layer]);
-
-            if (match.Success)
-            {
-                string dimensionValue = match.Groups[1].Value;
-                if (int.TryParse(dimensionValue, out int extractedDimension))
-                {
-                    return extractedDimension;
-                }
-                else
-                {
-                    Console.WriteLine("Failed to convert the extracted string to an integer.");
-                    return 0;
-                }
-            }
-            else
-            {
-                Console.WriteLine("No match found in the string");
-                return 0;
-            }
-            
-        }
-
         void SetWeightDimentions(int layer)
         {
             ManageData getData = new ManageData();
 
-            var dimention1 = getData.GetDimentions(layer);
+            var dimention1 = 
             var dimention2 = getData.GetDimentions(layer + 1);
 
 
