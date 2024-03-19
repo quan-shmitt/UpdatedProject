@@ -43,7 +43,7 @@ namespace UpdatedProject
         }
 
 
-        Dictionary<string, Action> algorithmFunctions = new Dictionary<string, Action>
+        Dictionary<string, MethodInfo> algorithmFunctions = new Dictionary<string, MethodInfo>
         {
             {"ResizeImage",  },
             {"ApplyConvolutionFilter", typeof(CNNLayers).GetMethod("ApplyConvolutionFilter") },
