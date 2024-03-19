@@ -10,14 +10,21 @@ namespace UpdatedProject
 {
     internal class PredictInput
     {
-        MLP forwardPass = new MLP();
         ManageData manageData = new ManageData();
 
-        public void FindNumInPicture(int LayerCount)
+        public void FindNumInPicture(int LayerCount, int threashold)
         {
-            Vector<double> LayerVector = manageData.GetImage();
+            Matrix<double> LayerMatrix = manageData.GetImage();
 
-            forwardPass.Forwards(LayerVector, 0, LayerCount);
+
+            MLP forwardPass = new MLP();
+
+            CNNLayers cnn = new CNNLayers(LayerMatrix);
+
+            cnn.Forwards(0, LayerCount, threashold);
+
+            forwardPass.Forwards(cnn.MatrixToVector(LayerMatrix), 0, LayerCount);
+
 
             int PredictedNum = forwardPass.Cache[forwardPass.Cache.Count() - 1].MaximumIndex();
 

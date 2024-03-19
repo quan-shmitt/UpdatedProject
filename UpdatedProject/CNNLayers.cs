@@ -1,6 +1,7 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Reflection;
@@ -19,11 +20,15 @@ namespace UpdatedProject
 
         public Matrix<double> result;
 
+        Matrix<double> input;
+
         public string[] algorithms = TOMLHandle.GetCNNStruct();
 
         int threshold = 350;
         int scaleFactor = TOMLHandle.GetScaleFactor();
         int poolSize = TOMLHandle.GetPoolSize();
+
+
 
 
         public void ChangeScaleFactor(int i)
@@ -32,9 +37,10 @@ namespace UpdatedProject
         }
 
 
-        public CNNLayers()
+        public CNNLayers(Matrix<double> input)
         {
             Kernel = manageData.getKernel();
+            this.input = input;
         }
 
         public Matrix<double> CNNOutput()
@@ -45,7 +51,7 @@ namespace UpdatedProject
 
         Dictionary<string, MethodInfo> algorithmFunctions = new Dictionary<string, MethodInfo>
         {
-            {"ResizeImage",  },
+            {"ResizeImage", typeof(CNNLayers).GetMethod("ResizeImage") },
             {"ApplyConvolutionFilter", typeof(CNNLayers).GetMethod("ApplyConvolutionFilter") },
             {"ApplyMaxPooling", typeof(CNNLayers).GetMethod("ApplyMaxPooling")},
             {"BilinearInterpolation", typeof(CNNLayers).GetMethod("BilinearInterpolation")}
@@ -73,24 +79,14 @@ namespace UpdatedProject
         }
 
 
-        public void Forwards(int Pass, int Layer, int threashold)
+        public void Forwards(int Layer ,int layerCount, int threashold)
         {
-            Matrix<double> LayerMatrix = manageData.LayerVectorGen(Pass);
+
+            Matrix<double> LayerMatrix = input;
             result = LayerMatrix;
 
-            
+            CNNLayers cnnLayersInstance = new CNNLayers(input); // Create an instance of CNNLayers
 
-            MethodInfo resizeImageMethod = algorithmFunctions["ResizeImage"];
-            // Assuming you have parameters for the method, you need to provide them when invoking
-            if (resizeImageMethod != null)
-            {
-                // For demonstration purposes, pass null for parameters array
-                resizeImageMethod.Invoke(null, null);
-            }
-            else
-            {
-                Console.WriteLine("ResizeImage method not found.");
-            }
             foreach (string algorithm in algorithms)
             {
                 if (algorithmFunctions.ContainsKey(algorithm))
@@ -105,14 +101,18 @@ namespace UpdatedProject
                         parameters[i] = GetParameterValue(parametersInfo[i].ParameterType, Layer, result);
                     }
 
-                    algorithmFunctions[algorithm].Invoke(result, parameters);
+                    // Invoke the method on the instance of CNNLayers
+                    algorithmFunctions[algorithm].Invoke(cnnLayersInstance, parameters);
                 }
             }
-            Layer--;
 
-            if(Layer != 0)
+
+            layerCount--;
+            Layer++;
+
+            if (layerCount != 0)
             {
-                Forwards(Pass, Layer, threashold);
+                Forwards(Layer, layerCount, threashold);
             }
         }
 

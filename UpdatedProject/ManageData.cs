@@ -122,7 +122,7 @@ namespace UpdatedProject
             }
         }
 
-        public Vector<double> GetImage()
+        public Matrix<double> GetImage()
         {
             string FileName = "Data\\ImageToProcess";
 
@@ -131,19 +131,21 @@ namespace UpdatedProject
                 Console.WriteLine("file exists");
                 string[] files = Directory.GetFiles(FileName);
                 string file = files[0];
-                using (Bitmap Image = new Bitmap(file))
-                {
-                    Vector<double> RGBVal = Vector<double>.Build.DenseOfArray(new double[Image.Width * Image.Height]);
 
-                    for (int y = 0; y < Image.Height; y++)
+                using (Bitmap image = new Bitmap(file))
+                {
+                    Matrix<double> RGBVal = Matrix<double>.Build.DenseOfArray(new Double[image.Width, image.Height]);
+
+                    for (int y = 0; y < image.Height; y++)
                     {
-                        for (int x = 0; x < Image.Width; x++)
+                        for (int x = 0; x < image.Width; x++)
                         {
-                            Color color = Image.GetPixel(x, y);
+                            Color color = image.GetPixel(x, y);
 
                             double NormColor = color.GetBrightness();
 
-                            RGBVal[x + y * Image.Width] = NormColor;
+                            RGBVal[x, y] = NormColor;
+
 
                         }
                     }

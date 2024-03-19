@@ -15,6 +15,7 @@ namespace UpdatedProject
 
         public Matrix<double> weights;
 
+        public Matrix<double> LayerMatrix;
 
 
         public Vector<double> BiasVector;
@@ -25,6 +26,8 @@ namespace UpdatedProject
 
             //CreateParentDataset(Convert.ToUInt32(MaxImageCount));
             int[] dim = new int[] {3,3};
+
+            LayerMatrix = new ManageData().LayerVectorGen(Pass);
 
             fileGen(layerCount, CNNCount, dim);
 
@@ -306,8 +309,8 @@ namespace UpdatedProject
         {
             ManageData getData = new ManageData();
 
-            var dimention1 = getData.GetDimentions(layer);
-            var dimention2 = getData.GetDimentions(layer + 1);
+            var dimention1 = LayerMatrix.ColumnCount * LayerMatrix.RowCount;
+            var dimention2 = TOMLHandle.GetHiddenLayerCount();
 
 
             weights = Matrix<double>.Build.Dense(dimention2, dimention1);
