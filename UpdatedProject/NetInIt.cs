@@ -266,7 +266,7 @@ namespace UpdatedProject
         {
             ManageData getData = new ManageData();
 
-            var dimention2 = getData.GetDimentions(layer + 1);
+            var dimention2 = TOMLHandle.GetHiddenLayerCount();
 
             BiasVector = Vector<double>.Build.Dense(dimention2);
 
