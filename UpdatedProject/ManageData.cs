@@ -7,7 +7,6 @@ using System.IO;
 using MathNet.Numerics.LinearAlgebra;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
-using HDF.PInvoke;
 using System.Threading;
 using System.Drawing.Text;
 using System.Diagnostics.Eventing.Reader;

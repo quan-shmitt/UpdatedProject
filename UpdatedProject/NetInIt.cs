@@ -1,5 +1,4 @@
-﻿using HDF.PInvoke;
-using MathNet.Numerics.Integration;
+﻿using MathNet.Numerics.Integration;
 using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.IO;
@@ -42,59 +41,6 @@ namespace UpdatedProject
 
         }
         //heheheha
-        public void CreateParentDataset(uint parentNumRows)
-        {
-            
-            string fileName = "Database.h5";
-
-            if (!File.Exists(fileName))
-            {
-                try
-                {
-                    // Dimensions for the parent dataset
-                    uint parentNumCols = 1;
-
-                    // Initialize the HDF5 library
-                    H5.open();
-
-                    // Create a new HDF5 file
-                    var fileId = H5F.create(fileName, H5F.ACC_TRUNC);
-
-                    // Create a dataspace for the parent dataset
-                    ulong[] parentDims = { parentNumRows, parentNumCols };
-                    var parentDataspaceId = H5S.create_simple(2, parentDims, null);
-
-                    // Create a parent dataset within the file
-                    var parentDatasetId = H5D.create(fileId, "parent_dataset", H5T.NATIVE_DOUBLE, parentDataspaceId);
-
-                    // Generate sample data for the parent dataset
-                    double[] parentData = new double[parentNumRows];
-                    for (uint i = 0; i < parentNumRows; i++)
-                    {
-                        parentData[i] = i + 1.0; // Incrementing by one as a double
-                    }
-
-                    // Write data to the parent dataset
-                    GCHandle parentHandle = GCHandle.Alloc(parentData, GCHandleType.Pinned);
-                    H5D.write(parentDatasetId, H5T.NATIVE_DOUBLE, H5S.ALL, H5S.ALL, H5P.DEFAULT, parentHandle.AddrOfPinnedObject());
-                    parentHandle.Free();
-
-                    // Close resources for the parent dataset
-                    H5D.close(parentDatasetId);
-                    H5S.close(parentDataspaceId);
-
-                    // Close the HDF5 file
-                    H5F.close(fileId);
-
-                    // Close the HDF5 library
-                    H5.close();
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"An Error occured: {e}");
-                }
-            }
-        }
 
 
         static public int GetFileDimentions(int Pass)
