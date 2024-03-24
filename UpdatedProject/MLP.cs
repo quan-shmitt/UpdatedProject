@@ -34,7 +34,6 @@ namespace UpdatedProject
 
             Vector<double> output = weights * LayerVector + Bias;
 
-            Console.WriteLine(output.ToString());
 
             if (LayerCount > 0)
             {

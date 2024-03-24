@@ -43,6 +43,15 @@ namespace UpdatedProject
             return KernelStep;
         }
 
+        public static void SetInputSize(int height, int width)
+        {
+
+            TomlTable mlpStruct = TOMLFILE.Get<TomlTable>("MLPStruct");
+
+            TomlArray Dims = TomlArray.Get<TomlArray>();
+
+            mlpStruct["InputSize"] =  ;
+        }
 
         public static int GetLearningRate()
         {

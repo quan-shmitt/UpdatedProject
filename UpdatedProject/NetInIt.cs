@@ -24,7 +24,7 @@ namespace UpdatedProject
         {
 
             //CreateParentDataset(Convert.ToUInt32(MaxImageCount));
-            int[] dim = new int[] {3,3};
+            int[] dim = new int[] {TOMLHandle.GetKernelSize(), TOMLHandle.GetKernelSize()};
 
             LayerMatrix = new ManageData().LayerVectorGen(Pass);
 
@@ -266,7 +266,7 @@ namespace UpdatedProject
 
                 dimention2 = TOMLHandle.GetHiddenLayerCount()[layer];
             }
-            else if(layer < TOMLHandle.LayerCount - 2)
+            else if(layer < TOMLHandle.LayerCount)
             {
                 dimention1 = TOMLHandle.GetHiddenLayerCount()[layer];
                 dimention2 = TOMLHandle.GetHiddenLayerCount()[layer + 1];
@@ -286,7 +286,7 @@ namespace UpdatedProject
 
             int dimention2;
 
-            if (layer < TOMLHandle.LayerCount - 2)
+            if (layer < TOMLHandle.LayerCount)
             {
                 dimention2 = TOMLHandle.GetHiddenLayerCount()[layer];
             }
