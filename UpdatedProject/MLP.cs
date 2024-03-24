@@ -12,7 +12,7 @@ namespace UpdatedProject
     internal class MLP
     {
         public Matrix<double> LayerMatrix;
-        public List<Vector<double>> Cache = new List<Vector<double>>(); 
+        public List<Vector<double>> Cache = new List<Vector<double>>();
 
         ManageData ManageData = new ManageData();
 
@@ -23,6 +23,7 @@ namespace UpdatedProject
 
         public void Forwards(Vector<double> LayerVector, int Layer, int LayerCount)
         {
+            Console.WriteLine(Layer);
             Cache.Add(LayerVector);
 
             Matrix<double> weights = ManageData.GetWeight(Layer);
@@ -32,6 +33,8 @@ namespace UpdatedProject
             Layer++; //indexes to the next layer in the network
 
             Vector<double> output = weights * LayerVector + Bias;
+
+            Console.WriteLine(output.ToString());
 
             if (LayerCount > 0)
             {

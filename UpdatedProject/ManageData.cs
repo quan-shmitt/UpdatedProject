@@ -243,105 +243,37 @@ namespace UpdatedProject
                 }
             }
         }
-
-        /*        public void SaveLayorVectors(Vector<double> LayerVector,int Pass ,int layer)
-                {
-                    Console.WriteLine("making child");
-
-                    string fileName = "Database.h5";
-
-                    ulong numRows = Convert.ToUInt64(LayerVector.Count());
-                    Console.WriteLine(numRows);
-
-                    // Open the HDF5 file
-                    var fileId = H5F.open(fileName, H5F.ACC_RDWR);
-
-
-
-                    // Create a dataspace for the child dataset
-                    uint childNumCols = 1;
-                    ulong[] childDims = { numRows, childNumCols };
-                    var childDataspaceId = H5S.create_simple(2, childDims, null);
-
-                    // Create a child dataset within the file
-                    var childDatasetId = H5D.create(fileId, $"child_dataset_{Pass}_layer_{layer}", H5T.NATIVE_DOUBLE, childDataspaceId);
-
-                    // Generate sample data for the child dataset
-                    double[] columnData = LayerVector.ToArray();
-
-
-                    // Write data to the child dataset
-                    GCHandle columnHandle = GCHandle.Alloc(columnData, GCHandleType.Pinned);
-                    H5D.write(childDatasetId, H5T.NATIVE_DOUBLE, H5S.ALL, H5S.ALL, H5P.DEFAULT, columnHandle.AddrOfPinnedObject());
-                    columnHandle.Free();
-
-                    // Close resources for the child dataset
-                    H5D.close(childDatasetId);
-                    H5S.close(childDataspaceId);
-
-
-                    // Close the HDF5 file
-                    H5F.close(fileId);
-
-                    Console.WriteLine("finished making child");
-                }
-
-                public double[] ReadSpecificChild(int targetLayer, int targetPass)
-                {
-                    string fileName = "Database.h5";
-
-                    // Initialize the HDF5 library
-                    H5.open();
-
-                    // Open the HDF5 file
-                    var fileId = H5F.open(fileName, H5F.ACC_RDONLY);
-
-                    // Open the specified child dataset
-                    var childDatasetId = H5D.open(fileId, $"child_dataset_{targetPass}_layer_{targetLayer}");
-
-                    // Get the dataspace of the child dataset
-                    var childDataspaceId = H5D.get_space(childDatasetId);
-
-                    // Get the dimensions of the child dataset
-                    ulong[] childDims = new ulong[2];
-                    H5S.get_simple_extent_dims(childDataspaceId, childDims, null);
-
-                    // Read data from the child dataset
-                    double[] childData = new double[childDims[0] * childDims[1]];
-                    GCHandle childHandle = GCHandle.Alloc(childData, GCHandleType.Pinned);
-                    H5D.read(childDatasetId, H5T.NATIVE_DOUBLE, H5S.ALL, H5S.ALL, H5P.DEFAULT, childHandle.AddrOfPinnedObject());
-                    childHandle.Free();
-
-                    // Close resources for the specified child dataset
-                    H5D.close(childDatasetId);
-                    H5S.close(childDataspaceId);
-
-                    // Close the HDF5 file
-                    H5F.close(fileId);
-
-                    // Close the HDF5 library
-                    H5.close();
-
-                    return childData;
-
-                }
-        */
         void SetWeightDimentions(int layer)
         {
-            ManageData getData = new ManageData();
+            int dimention1;
+            int dimention2;
 
-            var dimention1 = 
-            var dimention2 = getData.GetDimentions(layer + 1);
-
+            if (layer > TOMLHandle.LayerCount - 2)
+            {
+                dimention1 = TOMLHandle.GetHiddenLayerCount()[layer];
+                dimention2 = TOMLHandle.GetHiddenLayerCount()[layer + 1];
+            }
+            else
+            {
+                dimention1 = TOMLHandle.GetHiddenLayerCount()[layer];
+                dimention2 = TOMLHandle.GetOutputLayerCount();
+            }
 
             weights = Matrix<double>.Build.Dense(dimention2, dimention1);
 
         }
         void SetBiasDimentions(int layer)
         {
-            ManageData getData = new ManageData();
+            int dimention2;
 
-            var dimention2 = getData.GetDimentions(layer + 1);
+            if(layer == TOMLHandle.LayerCount)
+            {
+                dimention2 = TOMLHandle.GetHiddenLayerCount()[layer + 1];
+            }
+            else
+            {
+                dimention2 = TOMLHandle.GetOutputLayerCount();
+            }
 
             BiasVector = Vector<double>.Build.Dense(dimention2);
 

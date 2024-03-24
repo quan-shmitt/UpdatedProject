@@ -12,9 +12,12 @@ namespace UpdatedProject
     {
         static TomlTable TOMLFILE;
 
+        public static int LayerCount;
+
         public static void GetToml(string filename)
         {
             TOMLFILE = Toml.ReadFile(filename);
+            LayerCount = GetHiddenLayerCount().Length;
         }
 
         public static string[] GetCNNStruct()
@@ -48,11 +51,13 @@ namespace UpdatedProject
             return LearningRate;
         }
 
-        public static int GetHiddenLayerCount()
+        public static int[] GetHiddenLayerCount()
         {
-            var HiddenLayerCount = TOMLFILE.Get<TomlTable>("MLPStruct").Get<int>("HiddenLayerCount");
+            var HiddenLayerCount = TOMLFILE.Get<TomlTable>("MLPStruct").Get<TomlArray>("HiddenLayerCount");
 
-            return HiddenLayerCount;
+            int[] HiddenCount = HiddenLayerCount.Items.Select(item => item.Get<int>()).ToArray();
+
+            return HiddenCount;
         }
 
         public static string[] GetOutputClasses()
@@ -62,6 +67,13 @@ namespace UpdatedProject
             string[] StringArray = OutputClasses.Items.Select(item =>item.Get<string>()).ToArray();
 
             return StringArray;
+        }
+
+        public static int GetOutputLayerCount()
+        {
+            var OutputClasses = TOMLFILE.Get<TomlTable>("MLPStruct").Get<TomlArray>("OutputClasses");
+
+            return OutputClasses.Length;
         }
 
         public static int GetScaleFactor()

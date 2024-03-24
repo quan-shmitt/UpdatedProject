@@ -255,9 +255,27 @@ namespace UpdatedProject
         {
             ManageData getData = new ManageData();
 
-            var dimention1 = LayerMatrix.ColumnCount * LayerMatrix.RowCount;
-            var dimention2 = TOMLHandle.GetHiddenLayerCount();
+            Console.WriteLine(layer);
 
+            int dimention1;
+            int dimention2;
+
+            if (layer == 0) 
+            { 
+                dimention1 = LayerMatrix.ColumnCount * LayerMatrix.RowCount;
+
+                dimention2 = TOMLHandle.GetHiddenLayerCount()[layer];
+            }
+            else if(layer < TOMLHandle.LayerCount - 2)
+            {
+                dimention1 = TOMLHandle.GetHiddenLayerCount()[layer];
+                dimention2 = TOMLHandle.GetHiddenLayerCount()[layer + 1];
+            }
+            else
+            {
+                dimention1 = TOMLHandle.GetHiddenLayerCount()[layer - 1];
+                dimention2 = TOMLHandle.GetOutputLayerCount();
+            }
 
             weights = Matrix<double>.Build.Dense(dimention2, dimention1);
 
@@ -266,9 +284,17 @@ namespace UpdatedProject
         {
             ManageData getData = new ManageData();
 
-            var dimention2 = TOMLHandle.GetHiddenLayerCount();
+            int dimention2;
 
-            BiasVector = Vector<double>.Build.Dense(dimention2);
+            if (layer < TOMLHandle.LayerCount - 2)
+            {
+                dimention2 = TOMLHandle.GetHiddenLayerCount()[layer];
+            }
+            else
+            {
+                dimention2 = TOMLHandle.GetOutputLayerCount();
+            }
+            BiasVector = Vector<double>.Build.DenseOfArray(new double[dimention2]);
 
         }
 
