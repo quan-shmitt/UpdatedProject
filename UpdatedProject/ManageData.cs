@@ -248,9 +248,11 @@ namespace UpdatedProject
             int dimention1;
             int dimention2;
 
+            int[] TargetRes = TOMLHandle.GetTargetResolution();
+
             if (layer == 0)
             {
-                dimention1 = netinit.LayerMatrix.ColumnCount * netinit.LayerMatrix.RowCount;
+                dimention1 = TargetRes[0] * TargetRes[1];
                 dimention2 = TOMLHandle.GetHiddenLayerCount()[layer];
             }
             else if (layer < TOMLHandle.LayerCount)
@@ -260,7 +262,7 @@ namespace UpdatedProject
             }
             else
             {
-                dimention1 = TOMLHandle.GetHiddenLayerCount()[layer];
+                dimention1 = TOMLHandle.GetHiddenLayerCount()[layer - 1];
                 dimention2 = TOMLHandle.GetOutputLayerCount();
             }
 
@@ -273,7 +275,7 @@ namespace UpdatedProject
 
             if(layer < TOMLHandle.LayerCount)
             {
-                dimention2 = TOMLHandle.GetHiddenLayerCount()[layer + 1];
+                dimention2 = TOMLHandle.GetHiddenLayerCount()[layer];
             }
             else
             {

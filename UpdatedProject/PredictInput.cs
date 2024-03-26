@@ -27,6 +27,7 @@ namespace UpdatedProject
 
 
             int PredictedNum = forwardPass.Cache[forwardPass.Cache.Count() - 1].MaximumIndex();
+            Console.WriteLine(forwardPass.Cache[forwardPass.Cache.Count() - 1]);
 
             Console.WriteLine($"The network predicts this num to be: {PredictedNum}");
 

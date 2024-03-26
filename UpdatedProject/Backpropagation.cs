@@ -33,55 +33,42 @@ namespace UpdatedProject
 
         public void BackProp(List<Vector<double>> LayerVectors ,Vector<double> Target, double LearningRate, int layer)
         {
-            LayerVectors[layer] = Softmax(LayerVectors[layer]);
 
 
             Program.cost += CalculateSparseCategoricalCrossEntropy(LayerVectors[layer], Convert.ToInt32(Target.MaximumIndex()));
 
 
-            Vector<double> gradientWrtWeights = LayerVectors[layer].PointwiseMultiply(LayerVectors[layer] - Target) * SoftmaxDerivativeMatrix(LayerVectors[layer]);
+            Matrix<double> gradientWrtWeights = (LayerVectors[layer] - Target).ToColumnMatrix() * LayerVectors[layer - 1].ToRowMatrix();
 
-            Vector<double> gradientWrtLogits = SoftmaxDerivativeMatrix(LayerVectors[layer]) * (LayerVectors[layer] - Target);
-
-            Vector<double> gradientWrtBiases = gradientWrtLogits;
-
-            
-
-            
+            Vector<double> gradientWrtBias = LayerVectors[layer] - Target;
 
 
-            for(int i = 0; i < Weights[layer - 1].RowCount; i++)
-            {
-                for(int j = 0; j < Weights[layer - 1].ColumnCount; j++)
-                {
-                    (Weights[layer - 1])[i, j] -= LearningRate * gradientWrtWeights[i];
-                }
-            }
 
-            Bias[layer - 1] -= LearningRate * gradientWrtBiases;
+            Weights[layer - 1] -= LearningRate * gradientWrtWeights;
+
+
+            Bias[layer - 1] -= LearningRate * gradientWrtBias;
 
             getData.SaveWeights(Weights[layer - 1], layer - 1);
             getData.SaveBias(Bias[layer - 1], layer - 1);
 
+            var UpstreamGradient = LayerVectors[layer] - Target;
 
             layer--;
 
             while (layer > 0)
             {
-                gradientWrtWeights = ReLU_Derivative(LayerVectors[layer]).PointwiseMultiply(LayerVectors[layer]);
+                gradientWrtWeights = ReLU_Derivative(LayerVectors[layer]).ToColumnMatrix() * LayerVectors[layer - 1].ToRowMatrix();
 
-                gradientWrtBiases = ReLU_Derivative(LayerVectors[layer]);
+                Vector<double> repeatedDerivative = ReLU_Derivative(LayerVectors[layer]).SubVector(0, LayerVectors[layer].Count);
 
-                for (int i = 0; i < Weights[layer - 1].RowCount; i++)
-                {
-                    for (int j = 0; j < Weights[layer - 1].ColumnCount; j++)
-                    {
-                        (Weights[layer - 1])[i, j] -= LearningRate * gradientWrtWeights[i];
-                    }
-                }
+                gradientWrtBias = UpstreamGradient.PointwiseMultiply(repeatedDerivative);
+
+                Weights[layer - 1] -= LearningRate * gradientWrtWeights;
 
 
-                Bias[layer - 1] -= LearningRate * gradientWrtBiases;
+
+                Bias[layer - 1] -= LearningRate * gradientWrtBias;
 
                 getData.SaveWeights(Weights[layer - 1], layer - 1);
                 getData.SaveBias(Bias[layer - 1], layer - 1);
@@ -90,7 +77,7 @@ namespace UpdatedProject
             }
         }
 
-        static double CalculateSparseCategoricalCrossEntropy(Vector<double> predictedProbabilities, int trueLabel)
+        double CalculateSparseCategoricalCrossEntropy(Vector<double> predictedProbabilities, int trueLabel)
         {
             if (predictedProbabilities == null || predictedProbabilities.Count == 0)
             {
@@ -108,7 +95,6 @@ namespace UpdatedProject
             // Calculate log probabilities
             for (int i = 0; i < predictedProbabilities.Count; i++)
             {
-                // Use a small epsilon to avoid log(0) errors
                 logProbabilities[i] = Math.Log(Math.Max(predictedProbabilities[i], epsilon));
             }
 
@@ -125,12 +111,12 @@ namespace UpdatedProject
         }
 
         // Derivative of ReLU activation function
-        Vector<double> ReLU_Derivative(Vector<double> x)
+        static Vector<double> ReLU_Derivative(Vector<double> logits)
         {
-            return x.PointwiseMaximum(0).PointwiseSign(); ;
+            return logits.Map(x => x > 0 ? 1.0 : 0.0); 
         }
 
-        static Vector<double> Softmax(Vector<double> logits)
+        Vector<double> Softmax(Vector<double> logits)
         {
             // Avoid numerical instability by subtracting the maximum logit
             double maxLogit = logits.Maximum();
@@ -144,19 +130,25 @@ namespace UpdatedProject
 
             return probabilities;
         }
-        static Matrix<double> SoftmaxDerivativeMatrix(Vector<double> softmax)
+
+        Vector<double> SoftmaxDerivativeVector(Vector<double> logits)
         {
-            int K = softmax.Count;
-            Matrix<double> result = Matrix<double>.Build.Dense(K, K, (i, j) =>
+            int K = logits.Count;
+            Vector<double> result = Vector<double>.Build.Dense(K, (i) =>
             {
-                if (i == j)
-                    return softmax[i] * (1 - softmax[i]);
+                int row = i / K;
+                int col = i % K;
+                if (row == col)
+                    return logits[row] * (1 - logits[row]);
                 else
-                    return -softmax[i] * softmax[j];
+                    return -logits[row] * logits[col];
             });
 
             return result;
         }
+
+
+
 
     }
 }

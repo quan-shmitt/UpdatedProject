@@ -255,8 +255,6 @@ namespace UpdatedProject
         {
             ManageData getData = new ManageData();
 
-            Console.WriteLine(layer);
-
             int dimention1;
             int dimention2;
 

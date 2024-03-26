@@ -23,7 +23,6 @@ namespace UpdatedProject
 
         public void Forwards(Vector<double> LayerVector, int Layer, int LayerCount)
         {
-            Console.WriteLine(Layer);
             Cache.Add(LayerVector);
 
             Matrix<double> weights = ManageData.GetWeight(Layer);
@@ -39,14 +38,16 @@ namespace UpdatedProject
             {
                 output = ReLU(output);
             }
-
-            Cache.Add(output);
-
             
 
             if (LayerCount != 0)
             {
                 Forwards(output, Layer, LayerCount);
+            }
+            else
+            {
+                Softmax(output);
+                Cache.Add(output);
             }
         }
 

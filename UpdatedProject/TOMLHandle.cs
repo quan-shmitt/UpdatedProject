@@ -43,15 +43,6 @@ namespace UpdatedProject
             return KernelStep;
         }
 
-        public static void SetInputSize(int height, int width)
-        {
-
-            TomlTable mlpStruct = TOMLFILE.Get<TomlTable>("MLPStruct");
-
-            TomlArray Dims = TomlArray.Get<TomlArray>();
-
-            mlpStruct["InputSize"] =  ;
-        }
 
         public static int GetLearningRate()
         {
@@ -85,11 +76,13 @@ namespace UpdatedProject
             return OutputClasses.Length;
         }
 
-        public static int GetScaleFactor()
+        public static int[] GetTargetResolution()
         {
-            var ScaleFactor = TOMLFILE.Get<TomlTable>("CNNStruct").Get<int>("ScaleFactor");
+            var TargetRes = TOMLFILE.Get<TomlTable>("CNNStruct").Get<TomlArray>("TargetResolution");
 
-            return ScaleFactor;
+            int[] Scale = TargetRes.Items.Select(item => item.Get<int>()).ToArray();
+
+            return Scale;
         }
 
         public static int GetPoolSize()

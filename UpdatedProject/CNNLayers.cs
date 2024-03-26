@@ -25,16 +25,9 @@ namespace UpdatedProject
         public string[] algorithms = TOMLHandle.GetCNNStruct();
 
         int threshold = 350;
-        int scaleFactor = TOMLHandle.GetScaleFactor();
+        int[] TargetRes = TOMLHandle.GetTargetResolution();
         int poolSize = TOMLHandle.GetPoolSize();
 
-
-
-
-        public void ChangeScaleFactor(int i)
-        {
-            scaleFactor = i;
-        }
 
 
         public CNNLayers(Matrix<double> input)
@@ -59,8 +52,6 @@ namespace UpdatedProject
 
         static object GetParameterValue(Type parameterType, int layer, Matrix<double> Result)
         {
-
-            
             // Define your logic to generate parameter values dynamically based on parameterType
             // Here we're just providing some hardcoded values for demonstration purposes
             if (parameterType == typeof(int))
@@ -114,6 +105,10 @@ namespace UpdatedProject
             {
                 Forwards(Layer, layerCount, threashold);
             }
+            else
+            {
+                result = ResizeImage(result, TargetRes[0], TargetRes[1]);
+            }
         }
 
         public Matrix<double> ApplyConvolutionFilter(Matrix<double> inputImage, int layer)
@@ -143,11 +138,11 @@ namespace UpdatedProject
                     // Apply threshold
                     if (magnitude < threshold)
                     {
-                        result[y, x] = 0.0; // Assuming black in a grayscale image
+                        result[x, y] = 0.0; // Assuming black in a grayscale image
                     }
                     else
                     {
-                        result[y, x] = 255.0; // Assuming white in a grayscale image
+                        result[x, y] = 255.0; // Assuming white in a grayscale image
                     }
                 }
             }
@@ -186,7 +181,7 @@ namespace UpdatedProject
                     magnitude = Math.Max(0, Math.Min(255, magnitude));
 
                     // Set the new pixel value in the result matrix
-                    result[y, x] = magnitude;
+                    result[x, y] = magnitude;
                 }
             }
 
@@ -238,22 +233,24 @@ namespace UpdatedProject
             return maxVal;
         }
 
-        public Matrix<double> ResizeImage(Matrix<double> originalMatrix)
+        public Matrix<double> ResizeImage(Matrix<double> originalMatrix, int targetWidth, int targetHeight)
         {
             int originalWidth = originalMatrix.ColumnCount;
             int originalHeight = originalMatrix.RowCount;
 
-            int newWidth = originalWidth * scaleFactor;
-            int newHeight = originalHeight * scaleFactor;
+            // Calculate scaling factors for width and height
+            double widthScaleFactor = (double)targetWidth / originalWidth;
+            double heightScaleFactor = (double)targetHeight / originalHeight;
 
-            Matrix<double> resizedMatrix = Matrix<double>.Build.Dense(newHeight, newWidth);
+            Matrix<double> resizedMatrix = Matrix<double>.Build.Dense(targetHeight, targetWidth);
 
-            for (int y = 0; y < newHeight - 1; y++)
+            for (int y = 0; y < targetHeight; y++)
             {
-                for (int x = 0; x < newWidth - 1; x++)
+                for (int x = 0; x < targetWidth; x++)
                 {
-                    float originalX = x / (float)scaleFactor;
-                    float originalY = y / (float)scaleFactor;
+                    // Calculate original coordinates based on scaling factors
+                    float originalX = (float)x / (float)widthScaleFactor;
+                    float originalY = (float)y / (float)heightScaleFactor;
 
                     double interpolatedValue = BilinearInterpolation(originalMatrix, originalX, originalY);
                     resizedMatrix[y, x] = interpolatedValue;
