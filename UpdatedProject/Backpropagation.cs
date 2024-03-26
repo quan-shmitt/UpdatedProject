@@ -77,6 +77,13 @@ namespace UpdatedProject
             }
         }
 
+        public void CNNBackProp(Matrix<double> kernel)
+        {
+
+        }
+
+
+
         double CalculateSparseCategoricalCrossEntropy(Vector<double> predictedProbabilities, int trueLabel)
         {
             if (predictedProbabilities == null || predictedProbabilities.Count == 0)
