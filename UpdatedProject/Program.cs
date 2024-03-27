@@ -44,7 +44,7 @@ namespace UpdatedProject
                 Console.WriteLine("enter max image count");
 
                 int Passes = 100;
-                int epochs = 10;
+                int epochs = 5;
 
                 Pass(Passes, epochs);
             }
@@ -83,7 +83,7 @@ namespace UpdatedProject
 
                     List<Vector<double>> Input = forwardPass.Cache;
 
-                    backpropagation.BackProp(Input, image.Label(Convert.ToInt32(i), 10), 0.05, LayerCount);
+                    backpropagation.BackProp(Input, image.Label(Convert.ToInt32(i), 10), 0.01, LayerCount);
                 });
                 Console.WriteLine(cost/Passes);
                 cost = 0;

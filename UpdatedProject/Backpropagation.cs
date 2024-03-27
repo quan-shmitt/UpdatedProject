@@ -33,10 +33,7 @@ namespace UpdatedProject
 
         public void BackProp(List<Vector<double>> LayerVectors ,Vector<double> Target, double LearningRate, int layer)
         {
-
-
             Program.cost += CalculateSparseCategoricalCrossEntropy(LayerVectors[layer], Convert.ToInt32(Target.MaximumIndex()));
-
 
             Matrix<double> gradientWrtWeights = (LayerVectors[layer] - Target).ToColumnMatrix() * LayerVectors[layer - 1].ToRowMatrix();
 
@@ -60,13 +57,22 @@ namespace UpdatedProject
             {
                 gradientWrtWeights = ReLU_Derivative(LayerVectors[layer]).ToColumnMatrix() * LayerVectors[layer - 1].ToRowMatrix();
 
-                Vector<double> repeatedDerivative = ReLU_Derivative(LayerVectors[layer]).SubVector(0, LayerVectors[layer].Count);
+                gradientWrtBias = Vector<double>.Build.DenseOfArray(new double[Bias[layer - 1].Count]);
 
-                gradientWrtBias = UpstreamGradient.PointwiseMultiply(repeatedDerivative);
+                var GradWrtLlogits = ReLU_Derivative(LayerVectors[layer]);
+
+                int k = 0;
+                for(int i = 0; i < Bias[layer - 1].Count; i++)
+                {
+                    gradientWrtBias[i] = GradWrtLlogits[i] * UpstreamGradient[k];
+                    k++;
+                    if(k >= UpstreamGradient.Count)
+                    {
+                        k = 0;
+                    }
+                }
 
                 Weights[layer - 1] -= LearningRate * gradientWrtWeights;
-
-
 
                 Bias[layer - 1] -= LearningRate * gradientWrtBias;
 
