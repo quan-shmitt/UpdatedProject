@@ -10,8 +10,8 @@ namespace UpdatedProject
     internal class Program
     {
 
-        static int LayerCount = 2;
-        static int CNNCount = 2;
+        static readonly int LayerCount = 2;
+        static int CNNCount;
 
 
 
@@ -24,6 +24,8 @@ namespace UpdatedProject
         static void Main(string[] args)
         {
             TOMLHandle.GetToml("Data\\Configs\\config.toml");
+
+            CNNCount = TOMLHandle.GetCNNLayerCount();
 
             ManageData manageData = new ManageData();
 
@@ -43,7 +45,7 @@ namespace UpdatedProject
             {
                 Console.WriteLine("enter max image count");
 
-                int Passes = 100;
+                int Passes = 200;
                 int epochs = 5;
 
                 Pass(Passes, epochs);
@@ -76,7 +78,7 @@ namespace UpdatedProject
 
                     if (!File.Exists($"Data\\Pass {i}\\Output\\LayerVector.txt"))
                     {
-                        CNN.Forwards(0 ,LayerCount, 200);
+                        CNN.Forwards(0, LayerCount, 200);
                         forwardPass.Forwards(CNN.MatrixToVector(CNN.result), 0, LayerCount);
                     }
                     Backpropagation backpropagation = new Backpropagation(LayerCount);
@@ -85,7 +87,7 @@ namespace UpdatedProject
 
                     backpropagation.BackProp(Input, image.Label(Convert.ToInt32(i), 10), 0.01, LayerCount);
                 });
-                Console.WriteLine(cost/Passes);
+                Console.WriteLine(cost / Passes);
                 cost = 0;
             }
 

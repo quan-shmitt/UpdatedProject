@@ -1,25 +1,16 @@
-﻿using System;
+﻿using MathNet.Numerics.LinearAlgebra;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using MathNet.Numerics.LinearAlgebra;
-using System.Text.RegularExpressions;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Drawing.Text;
-using System.Diagnostics.Eventing.Reader;
-using System.Runtime.InteropServices.ComTypes;
 using System.Drawing;
-using Nett;
+using System.IO;
+using System.Threading;
 
 namespace UpdatedProject
 {
 
     internal class ManageData
     {
-        NetInIt netinit = new NetInIt();
+        readonly NetInIt netinit = new NetInIt();
 
 
         public Matrix<double> weights;
@@ -69,7 +60,7 @@ namespace UpdatedProject
             else
             {
                 Console.WriteLine("Weights dont exist \n Remaking file...");
-                
+
                 netinit.WeightGen(layer);
                 GetWeight(layer);
                 return weights;
@@ -158,7 +149,7 @@ namespace UpdatedProject
                 Directory.CreateDirectory(FileName);
                 return GetImage();
             }
-            
+
         }
 
 
@@ -182,9 +173,9 @@ namespace UpdatedProject
 
             int k = 0;
 
-            for(int i = 0; i < weights.ColumnCount; i++)
+            for (int i = 0; i < weights.ColumnCount; i++)
             {
-                for(int j = 0; j < weights.RowCount; j++)
+                for (int j = 0; j < weights.RowCount; j++)
                 {
                     weight[k] = weights[j, i].ToString();
                     k++;
@@ -211,14 +202,14 @@ namespace UpdatedProject
                 }
             }
         }
-        
+
         public void SaveBias(Vector<double> Bias, int layer)
         {
             string filename = $"Data\\Layer {layer}\\Bias.txt";
 
             string[] bias = new string[Bias.Count];
 
-            for(int i = 0;i < Bias.Count; i++)
+            for (int i = 0; i < Bias.Count; i++)
             {
                 bias[i] = Bias[i].ToString();
             }
@@ -273,7 +264,7 @@ namespace UpdatedProject
         {
             int dimention2;
 
-            if(layer < TOMLHandle.LayerCount)
+            if (layer < TOMLHandle.LayerCount)
             {
                 dimention2 = TOMLHandle.GetHiddenLayerCount()[layer];
             }
@@ -292,16 +283,16 @@ namespace UpdatedProject
 
             string directory = $"Data\\CNNLayer";
 
-            foreach(string file in Directory.GetFiles(directory))
+            foreach (string file in Directory.GetFiles(directory))
             {
                 string content = File.ReadAllText(file);
                 string[] vals = content.Split(',');
 
-                double[,] doubleArray = new double[(int)Math.Sqrt(vals.Length),(int)Math.Sqrt(vals.Length)];
+                double[,] doubleArray = new double[(int)Math.Sqrt(vals.Length), (int)Math.Sqrt(vals.Length)];
                 int k = 0;
-                for(int i = 0; i < Math.Sqrt(vals.Length); i++)
+                for (int i = 0; i < Math.Sqrt(vals.Length); i++)
                 {
-                    for(int j = 0; j < Math.Sqrt(vals.Length); j++)
+                    for (int j = 0; j < Math.Sqrt(vals.Length); j++)
                     {
                         doubleArray[i, j] = Convert.ToDouble(vals[k]);
                         k++;

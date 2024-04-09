@@ -1,14 +1,8 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UpdatedProject
 {
@@ -20,15 +14,15 @@ namespace UpdatedProject
 
         public Matrix<double> result;
 
-        Matrix<double> input;
+        readonly Matrix<double> input;
 
         public string[] algorithms = TOMLHandle.GetCNNStruct();
 
-        int threshold = 350;
-        int[] TargetRes = TOMLHandle.GetTargetResolution();
-        int poolSize = TOMLHandle.GetPoolSize();
+        readonly int threshold = 350;
+        readonly int[] TargetRes = TOMLHandle.GetTargetResolution();
+        readonly int poolSize = TOMLHandle.GetPoolSize();
 
-
+        readonly List<Matrix<double>> Cache = new List<Matrix<double>>();
 
         public CNNLayers(Matrix<double> input)
         {
@@ -42,7 +36,7 @@ namespace UpdatedProject
         }
 
 
-        Dictionary<string, MethodInfo> algorithmFunctions = new Dictionary<string, MethodInfo>
+        readonly Dictionary<string, MethodInfo> algorithmFunctions = new Dictionary<string, MethodInfo>
         {
             {"ResizeImage", typeof(CNNLayers).GetMethod("ResizeImage") },
             {"ApplyConvolutionFilter", typeof(CNNLayers).GetMethod("ApplyConvolutionFilter") },
@@ -70,7 +64,7 @@ namespace UpdatedProject
         }
 
 
-        public void Forwards(int Layer ,int layerCount, int threashold)
+        public void Forwards(int Layer, int layerCount, int threashold)
         {
 
             Matrix<double> LayerMatrix = input;
@@ -108,6 +102,7 @@ namespace UpdatedProject
             else
             {
                 result = ResizeImage(result, TargetRes[0], TargetRes[1]);
+                Cache.Add(result);
             }
         }
 
@@ -115,7 +110,7 @@ namespace UpdatedProject
         {
             // Apply convolution with Sobel kernels
             Matrix<double> result = ConvolutionFilter(inputImage, Kernel[layer]);
-         
+
             // Apply threshold to the magnitude of gradients
             result = ApplyThreshold(result, threshold);
 
@@ -249,8 +244,8 @@ namespace UpdatedProject
                 for (int x = 0; x < targetWidth; x++)
                 {
                     // Calculate original coordinates based on scaling factors
-                    float originalX = (float)x / (float)widthScaleFactor;
-                    float originalY = (float)y / (float)heightScaleFactor;
+                    float originalX = x / (float)widthScaleFactor;
+                    float originalY = y / (float)heightScaleFactor;
 
                     double interpolatedValue = BilinearInterpolation(originalMatrix, originalX, originalY);
                     resizedMatrix[y, x] = interpolatedValue;

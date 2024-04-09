@@ -1,10 +1,5 @@
 ﻿using Nett;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 
 namespace UpdatedProject
 {
@@ -28,7 +23,7 @@ namespace UpdatedProject
 
             return stringArray;
         }
- 
+
         public static int GetKernelSize()
         {
             var KernelSize = TOMLFILE.Get<TomlTable>("CNNStruct").Get<int>("kernelSize");
@@ -41,6 +36,13 @@ namespace UpdatedProject
             var KernelStep = TOMLFILE.Get<TomlTable>("CNNStruct").Get<int>("kernelStep");
 
             return KernelStep;
+        }
+
+        public static int GetCNNLayerCount()
+        {
+            var CNNLayerCount = TOMLFILE.Get<TomlTable>("CNNStruct").Get<int>("CNNRepeats");
+
+            return CNNLayerCount;
         }
 
 
@@ -64,7 +66,7 @@ namespace UpdatedProject
         {
             var OutputClasses = TOMLFILE.Get<TomlTable>("MLPStruct").Get<TomlArray>("OutputCLasses");
 
-            string[] StringArray = OutputClasses.Items.Select(item =>item.Get<string>()).ToArray();
+            string[] StringArray = OutputClasses.Items.Select(item => item.Get<string>()).ToArray();
 
             return StringArray;
         }

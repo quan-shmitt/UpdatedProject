@@ -1,9 +1,6 @@
-﻿using MathNet.Numerics.Integration;
-using MathNet.Numerics.LinearAlgebra;
+﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.IO;
-using System.Reflection.Emit;
-using System.Runtime.InteropServices;
 
 namespace UpdatedProject
 {
@@ -24,7 +21,7 @@ namespace UpdatedProject
         {
 
             //CreateParentDataset(Convert.ToUInt32(MaxImageCount));
-            int[] dim = new int[] {TOMLHandle.GetKernelSize(), TOMLHandle.GetKernelSize()};
+            int[] dim = new int[] { TOMLHandle.GetKernelSize(), TOMLHandle.GetKernelSize() };
 
             LayerMatrix = new ManageData().LayerVectorGen(Pass);
 
@@ -102,7 +99,7 @@ namespace UpdatedProject
 
             string DirectoryName = $"Data\\CNNLayer";
 
-            if(!Directory.Exists(DirectoryName))
+            if (!Directory.Exists(DirectoryName))
             {
                 Directory.CreateDirectory(DirectoryName);
             }
@@ -117,18 +114,18 @@ namespace UpdatedProject
             }
         }
 
-         double[] CNNLayerGen(int[] dimentions, GaussianRandomGenerator gaussianRandomGenerator)
-         {
+        double[] CNNLayerGen(int[] dimentions, GaussianRandomGenerator gaussianRandomGenerator)
+        {
             double[] vals = new double[dimentions[0] * dimentions[1]];
 
-            for (int i = 0;i < dimentions[0] * dimentions[1]; i++)
+            for (int i = 0; i < dimentions[0] * dimentions[1]; i++)
             {
                 vals[i] = gaussianRandomGenerator.Generate(0, 1);
             }
 
             return vals;
-            
-         }
+
+        }
 
 
 
@@ -258,13 +255,13 @@ namespace UpdatedProject
             int dimention1;
             int dimention2;
 
-            if (layer == 0) 
-            { 
+            if (layer == 0)
+            {
                 dimention1 = LayerMatrix.ColumnCount * LayerMatrix.RowCount;
 
                 dimention2 = TOMLHandle.GetHiddenLayerCount()[layer];
             }
-            else if(layer < TOMLHandle.LayerCount)
+            else if (layer < TOMLHandle.LayerCount)
             {
                 dimention1 = TOMLHandle.GetHiddenLayerCount()[layer];
                 dimention2 = TOMLHandle.GetHiddenLayerCount()[layer + 1];
@@ -300,7 +297,7 @@ namespace UpdatedProject
     }
     public class GaussianRandomGenerator
     {
-        private Random random;
+        private readonly Random random;
 
         public GaussianRandomGenerator()
         {

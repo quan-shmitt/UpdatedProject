@@ -1,16 +1,12 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UpdatedProject
 {
     internal class PredictInput
     {
-        ManageData manageData = new ManageData();
+        readonly ManageData manageData = new ManageData();
 
         public void FindNumInPicture(int LayerCount, int threashold)
         {

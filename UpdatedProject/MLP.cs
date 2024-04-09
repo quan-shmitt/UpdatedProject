@@ -1,20 +1,15 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UpdatedProject
 {
     internal class MLP
     {
-        public Matrix<double> LayerMatrix;
         public List<Vector<double>> Cache = new List<Vector<double>>();
 
-        ManageData ManageData = new ManageData();
+        readonly ManageData ManageData = new ManageData();
 
         public MLP()
         {
@@ -38,7 +33,7 @@ namespace UpdatedProject
             {
                 output = ReLU(output);
             }
-            
+
 
             if (LayerCount != 0)
             {
@@ -46,47 +41,10 @@ namespace UpdatedProject
             }
             else
             {
-                Softmax(output);
+                output = Softmax(output);
                 Cache.Add(output);
             }
         }
-
-
-
-        public static Matrix<double> Convolution(Matrix<double> image, Matrix<double> kernel)
-        {
-            int imageWidth = image.ColumnCount;
-            int imageHeight = image.RowCount;
-            int kernelWidth = kernel.ColumnCount;
-            int kernelHeight = kernel.RowCount;
-
-            int resultWidth = imageWidth - kernelWidth + 1;
-            int resultHeight = imageHeight - kernelHeight + 1;
-
-            Matrix<double> result = Matrix<double>.Build.Dense(resultHeight, resultWidth);
-
-            for (int i = 0; i < resultWidth; i++)
-            {
-                for (int j = 0; j < resultHeight; j++)
-                {
-                    double sum = 0;
-
-                    for (int m = 0; m < kernelWidth; m++)
-                    {
-                        for (int n = 0; n < kernelHeight; n++)
-                        {
-                            // Apply convolution operation
-                            sum += image[j + n, i + m] * kernel[n, m];
-                        }
-                    }
-
-                    result[j, i] = sum;
-                }
-            }
-
-            return result;
-        }
-
 
         public static Matrix<double> VectorToMatrix(Vector<double> vector, int width, int height)
         {
@@ -105,30 +63,10 @@ namespace UpdatedProject
 
         public static Vector<double> MatrixToVector(Matrix<double> matrix)
         {
-             return Vector<double>.Build.DenseOfArray(matrix.ToColumnMajorArray());
+            return Vector<double>.Build.DenseOfArray(matrix.ToColumnMajorArray());
         }
 
-        public static Matrix<double> SobelXFilter()
-        {
-            return Matrix<double>.Build.DenseOfArray(new double[,]
-            {
-            { -1, 0, 1 },
-            { -2, 0, 2 },
-            { -1, 0, 1 }
-            });
-        }
-
-        public static Matrix<double> SobelYFilter()
-        {
-            return Matrix<double>.Build.DenseOfArray(new double[,]
-            {
-            { -1, -2, -1 },
-            {  0,  0,  0 },
-            {  1,  2,  1 }
-            });
-        }
-
-        static Vector<double> Softmax(Vector<double> logits)
+        static public Vector<double> Softmax(Vector<double> logits)
         {
             // Avoid numerical instability by subtracting the maximum logit
             double maxLogit = logits.Maximum();

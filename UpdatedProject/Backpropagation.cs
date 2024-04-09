@@ -1,21 +1,16 @@
 ﻿using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Complex;
 using System;
 using System.Collections.Generic;
-using System.Configuration.Assemblies;
-using System.IO;
-using System.Linq;
-using System.Threading;
 
 namespace UpdatedProject
 {
     internal class Backpropagation
     {
-        ImageHandle label = new ImageHandle();
+        readonly ImageHandle label = new ImageHandle();
         public ManageData getData = new ManageData();
 
-        List<Matrix<double>> Weights = new List<Matrix<double>>();
-        List<Vector<double>> Bias = new List<Vector<double>>(); 
+        readonly List<Matrix<double>> Weights = new List<Matrix<double>>();
+        readonly List<Vector<double>> Bias = new List<Vector<double>>();
 
         public Backpropagation(int layer)
         {
@@ -29,9 +24,9 @@ namespace UpdatedProject
             {
                 Bias.Add(getData.getBias(i));
             }
-        } 
+        }
 
-        public void BackProp(List<Vector<double>> LayerVectors ,Vector<double> Target, double LearningRate, int layer)
+        public void BackProp(List<Vector<double>> LayerVectors, Vector<double> Target, double LearningRate, int layer)
         {
             Program.cost += CalculateSparseCategoricalCrossEntropy(LayerVectors[layer], Convert.ToInt32(Target.MaximumIndex()));
 
@@ -62,11 +57,11 @@ namespace UpdatedProject
                 var GradWrtLlogits = ReLU_Derivative(LayerVectors[layer]);
 
                 int k = 0;
-                for(int i = 0; i < Bias[layer - 1].Count; i++)
+                for (int i = 0; i < Bias[layer - 1].Count; i++)
                 {
                     gradientWrtBias[i] = GradWrtLlogits[i] * UpstreamGradient[k];
                     k++;
-                    if(k >= UpstreamGradient.Count)
+                    if (k >= UpstreamGradient.Count)
                     {
                         k = 0;
                     }
@@ -126,7 +121,7 @@ namespace UpdatedProject
         // Derivative of ReLU activation function
         static Vector<double> ReLU_Derivative(Vector<double> logits)
         {
-            return logits.Map(x => x > 0 ? 1.0 : 0.0); 
+            return logits.Map(x => x > 0 ? 1.0 : 0.0);
         }
 
         Vector<double> Softmax(Vector<double> logits)
